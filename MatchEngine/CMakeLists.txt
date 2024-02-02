@@ -7,3 +7,4 @@ add_library(MatchEngine SHARED ${source})
 target_link_libraries(MatchEngine PUBLIC Match)
 
 target_include_directories(MatchEngine PUBLIC include)
+target_include_directories(MatchEngine PRIVATE src/MatchEngine)

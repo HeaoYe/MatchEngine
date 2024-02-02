@@ -1,15 +1,21 @@
 #include <MatchEngine/MatchEngine.hpp>
-#include <Match/Match.hpp>
 
 int main() {
-    MatchEngine::Initialize();
+    MatchEngine::MatchEngine engine;
+    MatchEngine::MatchEngine engine2;
 
-    MCH_WARN("Hello World !")
+    // 引擎初始化入口
+    engine.initialize();
 
-    while (Match::window->is_alive()) {
-        Match::window->poll_events();
-    }
+    MCH_CLIENT_WARN("Hello World !")
+    // 引擎运行入口
+    engine.run();
 
-    MatchEngine::Destroy();
+    // 引擎销毁入口
+    engine.destroy();
+
+    engine2.initialize();
+    engine2.run();
+    engine2.destroy();
     return 0;
 }
