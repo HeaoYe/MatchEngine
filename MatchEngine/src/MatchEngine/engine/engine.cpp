@@ -16,7 +16,7 @@ namespace MatchEngine {
 
         // 初始化日志系统
         global_runtime_context->logger_system.initialize(Logger::Level::eInfo);
-        if (!check_runtime_system(global_runtime_context->logger_system.getInstance())) {
+        if (!checkRuntimeSystem(global_runtime_context->logger_system.getInstance())) {
             std::cout << "Failed initialize " << global_runtime_context->logger_system->getSystemName() << "." << std::endl;
             return;
         }
@@ -39,7 +39,7 @@ namespace MatchEngine {
         MCH_CORE_INFO("running...")
     }
 
-    bool MatchEngine::check_runtime_system(const RuntimeSystem *system) {
+    bool MatchEngine::checkRuntimeSystem(const RuntimeSystem *system) {
         if (global_runtime_context == nullptr) {
             return false;
         }

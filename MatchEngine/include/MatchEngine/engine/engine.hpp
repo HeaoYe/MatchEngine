@@ -11,6 +11,6 @@ namespace MatchEngine {
         void destroy();
         void run();
     private:
-        bool check_runtime_system(const RuntimeSystem *system);
+        bool checkRuntimeSystem(const RuntimeSystem *system);
     };
 }
