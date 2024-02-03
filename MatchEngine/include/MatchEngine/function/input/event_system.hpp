@@ -1,7 +1,7 @@
 #pragma once
 
-#include <MatchEngine/function/input/event.hpp>
 #include <MatchEngine/core/base/runtime_system.hpp>
+#include <MatchEngine/function/input/event.hpp>
 #include <MatchEngine/core/logger/logger.hpp>
 #include <map>
 #include <list>
@@ -80,6 +80,8 @@ namespace MatchEngine {
             }
         }
         
+        std::string getSystemName() const override { return "EventSystem"; }
+    private:
         template <class Event>
         void dispatch(Event event) {
             for (auto *layer : layers) {
@@ -89,8 +91,7 @@ namespace MatchEngine {
                 }
             }
         }
-
-        std::string getSystemName() const override { return "EventSystem"; }
+        void registerEventCallbacks();
     private:
         std::map<std::string, EventLayer *> layers_map;
         std::list<EventLayer *> layers;

@@ -17,7 +17,7 @@ namespace MatchEngine {
         };
     public:
         virtual ~RuntimeSystem() = default;
-        virtual std::string getSystemName() const { return "Unknown RuntimeSystem."; }
+        virtual std::string getSystemName() const { return "UnknownRuntimeSystem"; }
         virtual State getState() const { return state; }
     protected:
         void initializeRuntimeSystem();

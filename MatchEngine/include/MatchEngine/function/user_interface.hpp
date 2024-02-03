@@ -1,6 +1,7 @@
 #pragma once
 
 #include <MatchEngine/core/logger/logger.hpp>
+#include <MatchEngine/function/input/input_system.hpp>
 #include <MatchEngine/function/input/event_system.hpp>
 
 namespace MatchEngine {
@@ -24,5 +25,6 @@ namespace MatchEngine {
 
     // 提供给用户使用的运行时系统
     extern PointerWrapper<LoggerSystem> logger_system;
+    extern PointerWrapper<InputSystem> input;
     extern PointerWrapper<EventSystem> event_system;
 }

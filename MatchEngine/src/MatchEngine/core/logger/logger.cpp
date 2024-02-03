@@ -24,17 +24,17 @@ namespace MatchEngine {
     Logger::Logger(const std::string &name, Level level) {
         spd_logger = spdlog::stdout_color_mt(name);
         spd_logger->set_level(convert(level));
-        spd_logger->info("Create Logger");
     }
 
     Logger::~Logger() {
-        spd_logger->info("Destroy Logger");
         spd_logger.reset();
     }
 
     LoggerSystem::LoggerSystem(Logger::Level default_level) : default_level(default_level) {
+        core_logger = createLogger("MatchEngine Core");
+        client_logger = createLogger("MatchEngine Client");
+
         initializeRuntimeSystem();
-        
         state = RuntimeSystem::State::eInitialized;
     }
 
@@ -45,8 +45,8 @@ namespace MatchEngine {
 
     LoggerSystem::~LoggerSystem() {
         destoryRuntimeSystem();
-
         state = RuntimeSystem::State::eExited;
+
         for (auto &logger : loggers) {
             logger.reset();
         }

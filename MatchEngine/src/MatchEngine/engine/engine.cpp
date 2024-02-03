@@ -22,9 +22,19 @@ namespace MatchEngine {
             std::cout << "Failed initialize " << global_runtime_context->logger_system->getSystemName() << "." << std::endl;
             return false;
         }
-        // 创建日志
-        core_logger = global_runtime_context->logger_system->createLogger("MatchEngine Core");
-        client_logger = global_runtime_context->logger_system->createLogger("MatchEngine Client");
+
+        // 初始化窗口系统
+        global_runtime_context->window_system.initialize();
+        if (!checkRuntimeSystem(global_runtime_context->window_system.getInstance())) {
+            return false;
+        }
+
+        // 初始化输入系统
+        global_runtime_context->input_system.initialize();
+        input.ptr = global_runtime_context->input_system.getInstance();
+        if (!checkRuntimeSystem(input.ptr)) {
+            return false;
+        }
 
         // 初始化事件系统
         global_runtime_context->event_system.initialize();
@@ -40,17 +50,26 @@ namespace MatchEngine {
         // 销毁事件系统
         global_runtime_context->event_system.destory();
 
+        // 销毁输入系统
+        global_runtime_context->input_system.destory();
+
+        // 销毁窗口系统
+        global_runtime_context->window_system.destory();
+
         // 销毁日志系统
+        global_runtime_context->logger_system.destory();
         client_logger = nullptr;
         core_logger = nullptr;
-        global_runtime_context->logger_system.destory();
         
         delete global_runtime_context;
         global_runtime_context = nullptr;
     }
     
     void MatchEngine::run() {
-        MCH_CORE_INFO("running...")
+        while (global_runtime_context->window_system->isAlive()) {
+            global_runtime_context->window_system->pollEvents();
+            global_runtime_context->input_system->swapState();
+        }
     }
 
     bool MatchEngine::checkRuntimeSystem(const RuntimeSystem *system) {

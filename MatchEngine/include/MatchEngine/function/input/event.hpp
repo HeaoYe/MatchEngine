@@ -91,14 +91,15 @@ namespace MatchEngine {
         eMouseScroll,
     };
 
-    enum class MouseButton {
-        eLeft,
+    enum class MouseButton : size_t {
+        eLeft = 0,
         eMiddle,
         eRight,
+        eUnknown
     };
 
-    enum class Key {
-        eTab,
+    enum class Key : size_t {
+        eTab = 0,
         eLeftArrow,
         eRightArrow,
         eUpArrow,
@@ -138,11 +139,12 @@ namespace MatchEngine {
         eNumLock,
         ePrintScreen,
         ePause,
+        eUnknown
     };
 
     // 全部事件
-    DeclareEvent(Window, WindowResized, uint32_t width, height;)
-    DeclareEvent(Window, WindowMoved, uint32_t x, y;)
+    DeclareEvent(Window, WindowResized, int32_t width, height;)
+    DeclareEvent(Window, WindowMoved, int32_t x, y;)
     DeclareEvent(Window, WindowClosed)
     DeclareEvent(Window, WindowFocusd)
     DeclareEvent(Window, WindowLostFocus)
@@ -151,6 +153,6 @@ namespace MatchEngine {
     DeclareEvent(Input, InputChar, uint32_t data;)
     DeclareEvent(Mouse, MousePressed, MouseButton button;)
     DeclareEvent(Mouse, MouseReleased, MouseButton button;)
-    DeclareEvent(Mouse, MouseMoved, uint32_t x, y;)
-    DeclareEvent(Mouse, MouseScroll, uint32_t delta_x, delta_y;)
+    DeclareEvent(Mouse, MouseMoved, double x, y;)
+    DeclareEvent(Mouse, MouseScroll, double delta_x, delta_y;)
 }
