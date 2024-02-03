@@ -32,7 +32,9 @@ namespace MatchEngine {
         spd_logger.reset();
     }
 
-    LoggerSystem::LoggerSystem(Logger::Level default_level) : RuntimeSystem(), default_level(default_level) {
+    LoggerSystem::LoggerSystem(Logger::Level default_level) : default_level(default_level) {
+        initializeRuntimeSystem();
+        
         state = RuntimeSystem::State::eInitialized;
     }
 
@@ -42,6 +44,8 @@ namespace MatchEngine {
     };
 
     LoggerSystem::~LoggerSystem() {
+        destoryRuntimeSystem();
+
         state = RuntimeSystem::State::eExited;
         for (auto &logger : loggers) {
             logger.reset();

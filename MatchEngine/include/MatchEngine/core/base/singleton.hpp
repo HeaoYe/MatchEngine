@@ -2,6 +2,7 @@
 
 #include <MatchEngine/core/base/macro.hpp>
 #include <utility>
+#include <stdexcept>
 
 namespace MatchEngine {
 
@@ -13,14 +14,18 @@ namespace MatchEngine {
         Singleton() {
             instance = nullptr;
         }
-
+        
         ~Singleton() {
             destory();
         }
 
         template <typename... Args>
         void initialize(Args &&... args) {
-            instance = new T(std::forward<Args>(args)...);
+            if (instance == nullptr) {
+                instance = new T(std::forward<Args>(args)...);
+            } else {
+                throw std::runtime_error("Double initialize a singleton class.");
+            }
         }
 
         void destory() {

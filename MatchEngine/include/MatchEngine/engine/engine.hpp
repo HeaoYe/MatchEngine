@@ -1,13 +1,12 @@
 #pragma once
 
-#include <MatchEngine/core/base/macro.hpp>
-#include <MatchEngine/engine/runtime_context.hpp>
+#include <MatchEngine/core/base/runtime_system.hpp>
 
 namespace MatchEngine {
     class MatchEngine {
         DefaultNoCopyMoveConstruction(MatchEngine)
     public:
-        void initialize();
+        bool initialize();
         void destroy();
         void run();
     private:

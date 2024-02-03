@@ -7,7 +7,7 @@ namespace MatchEngine {
 
     // 运行时系统
     class RuntimeSystem {
-        NoCopyMoveConstruction(RuntimeSystem)
+        DefaultNoCopyMoveConstruction(RuntimeSystem)
     public:
         enum class State {
             eUninitialized,
@@ -16,10 +16,12 @@ namespace MatchEngine {
             eFatal,
         };
     public:
-        RuntimeSystem();
-        virtual ~RuntimeSystem();
-        virtual std::string getSystemName() const { return "UnknownRuntimeSystem"; }
+        virtual ~RuntimeSystem() = default;
+        virtual std::string getSystemName() const { return "Unknown RuntimeSystem."; }
         virtual State getState() const { return state; }
+    protected:
+        void initializeRuntimeSystem();
+        void destoryRuntimeSystem();
     protected:
         State state { RuntimeSystem::State::eUninitialized };
     };

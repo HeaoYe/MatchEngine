@@ -60,7 +60,6 @@ namespace MatchEngine {
         NoCopyMoveConstruction(LoggerSystem)
     public:
         LoggerSystem(Logger::Level default_level);
-
         ~LoggerSystem() override;
 
         Logger *createLogger(const std::string &name);

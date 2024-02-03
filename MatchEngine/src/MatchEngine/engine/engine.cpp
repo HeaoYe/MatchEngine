@@ -1,31 +1,45 @@
 #include <MatchEngine/engine/engine.hpp>
-#include "inner.hpp"
+#include <MatchEngine/function/user_interface.hpp>
+#include "internal.hpp"
 #include <iostream>
 
 namespace MatchEngine {
-    void MatchEngine::initialize() {
+    bool MatchEngine::initialize() {
         if (global_runtime_context != nullptr) {
             if (core_logger != nullptr) {
                 MCH_CORE_FATAL("Maybe you have initialized a MatchEngine, don't initilize again.")
             } else {
                 std::cout << "Maybe you meet some error when initialize a MatchEngine, please destroy it at first and try to initialize again." << std::endl;
             }
-            return;
+            return false;
         }
         global_runtime_context = new RuntimeContext();
 
         // 初始化日志系统
         global_runtime_context->logger_system.initialize(Logger::Level::eInfo);
-        if (!checkRuntimeSystem(global_runtime_context->logger_system.getInstance())) {
+        logger_system.ptr = global_runtime_context->logger_system.getInstance();
+        if (!checkRuntimeSystem(logger_system.ptr)) {
             std::cout << "Failed initialize " << global_runtime_context->logger_system->getSystemName() << "." << std::endl;
-            return;
+            return false;
         }
         // 创建日志
         core_logger = global_runtime_context->logger_system->createLogger("MatchEngine Core");
         client_logger = global_runtime_context->logger_system->createLogger("MatchEngine Client");
+
+        // 初始化事件系统
+        global_runtime_context->event_system.initialize();
+        event_system.ptr = global_runtime_context->event_system.getInstance();
+        if (!checkRuntimeSystem(event_system.ptr)) {
+            return false;
+        }
+
+        return true;
     }
 
     void MatchEngine::destroy() {
+        // 销毁事件系统
+        global_runtime_context->event_system.destory();
+
         // 销毁日志系统
         client_logger = nullptr;
         core_logger = nullptr;

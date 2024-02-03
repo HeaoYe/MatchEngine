@@ -2,15 +2,16 @@
 #include <MatchEngine/core/logger/logger.hpp>
 
 namespace MatchEngine {
-    RuntimeSystem::RuntimeSystem() {
+    void RuntimeSystem::initializeRuntimeSystem() {
         if (core_logger != nullptr) {
             MCH_CORE_WARN("Initialize RuntimeSystem: {}", getSystemName())
         }
     }
 
-    RuntimeSystem::~RuntimeSystem() {
+    void RuntimeSystem::destoryRuntimeSystem() {
         if (core_logger != nullptr) {
             MCH_CORE_WARN("Destory RuntimeSystem: {}", getSystemName())
         }
     }
+
 }
