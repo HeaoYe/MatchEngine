@@ -1,4 +1,4 @@
-#include <MatchEngine/function/input/event.hpp>
+#include <MatchEngine/function/event/event.hpp>
 
 namespace MatchEngine {
     ImplementEvent(WindowResized)

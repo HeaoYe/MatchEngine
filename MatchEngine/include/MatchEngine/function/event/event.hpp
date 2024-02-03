@@ -1,39 +1,11 @@
 #pragma once
 
-#include <functional>
+#include <MatchEngine/function/event/listener.hpp>
 #include <cstdint>
 #include <string>
 #include <map>
 
 namespace MatchEngine {
-    template <class Event>
-    using EventListener = std::function<bool(Event &)>;
-
-    using ListenerUUIDType = size_t;
-
-    template <class Event>
-    class ListenerUUID {
-    public:
-        using eventType = Event;
-
-        ListenerUUID() : uuid(0) {}
-        ListenerUUID(ListenerUUIDType uuid) : uuid(uuid) {}
-
-        void increase() {
-            uuid ++;
-        }
-
-        ListenerUUID previous() {
-            return ListenerUUID { uuid - 1 };
-        }
-
-        ListenerUUIDType asUuidType() {
-            return uuid;
-        }
-    private:
-        ListenerUUIDType uuid;
-    };
-
     #define DeclareEvent(category, type, ...) \
     struct type##Event { \
         __VA_ARGS__ \
@@ -61,12 +33,12 @@ namespace MatchEngine {
         std::string getTypeName() const { \
             return std::string(#type); \
         } \
-        static ::std::map<::std::string, ::std::map<ListenerUUIDType, EventListener<type##Event>>> listeners; \
+        static ::std::map<::std::string, ::std::map<ListenerUUIDType, ListenerCallback<type##Event>>> listeners; \
         static ::MatchEngine::ListenerUUID<type##Event> current_uuid; \
     };
 
     #define ImplementEvent(type) \
-    ::std::map<::std::string, std::map<ListenerUUIDType, EventListener<type##Event>>> type##Event::listeners; \
+    ::std::map<::std::string, std::map<ListenerUUIDType, ListenerCallback<type##Event>>> type##Event::listeners; \
     ::MatchEngine::ListenerUUID<type##Event> type##Event::current_uuid;
 
     enum class EventCategory {

@@ -13,5 +13,4 @@ namespace MatchEngine {
             MCH_CORE_WARN("Destory RuntimeSystem: {}", getSystemName())
         }
     }
-
 }

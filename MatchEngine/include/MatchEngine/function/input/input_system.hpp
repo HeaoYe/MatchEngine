@@ -1,17 +1,15 @@
 #pragma once
 
 #include <MatchEngine/core/base/runtime_system.hpp>
-#include <MatchEngine/function/input/event_system.hpp>
+#include <MatchEngine/function/event/event.hpp>
 #include <glm/vec2.hpp>
 
 namespace MatchEngine {
-    class MatchEngine;
-
     // 输入系统
     class InputSystem final : public RuntimeSystem {
         NoCopyMoveConstruction(InputSystem)
-        friend MatchEngine;
-        friend EventSystem;
+        friend class MatchEngine;
+        friend class EventSystem;
     private:
         enum class ButtonState : uint8_t {
             ePressed,

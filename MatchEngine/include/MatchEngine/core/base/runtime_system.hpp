@@ -4,7 +4,6 @@
 #include <string>
 
 namespace MatchEngine {
-
     // 运行时系统
     class RuntimeSystem {
         DefaultNoCopyMoveConstruction(RuntimeSystem)

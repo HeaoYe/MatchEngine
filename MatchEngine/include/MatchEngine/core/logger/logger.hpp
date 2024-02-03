@@ -1,11 +1,10 @@
 #pragma once
 
-#include <MatchEngine/core/base/runtime_system.hpp>
+#include <MatchEngine/core/base/macro.hpp>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 #include <string>
 #include <memory>
-#include <list>
 
 namespace MatchEngine {
     class Logger {
@@ -54,20 +53,6 @@ namespace MatchEngine {
         }
     private:
         std::shared_ptr<spdlog::logger> spd_logger;
-    };
-
-    class LoggerSystem final : public RuntimeSystem {
-        NoCopyMoveConstruction(LoggerSystem)
-    public:
-        LoggerSystem(Logger::Level default_level);
-        ~LoggerSystem() override;
-
-        Logger *createLogger(const std::string &name);
-
-        std::string getSystemName() const override { return "LoggerSystem"; }
-    private:
-        Logger::Level default_level;
-        std::list<std::unique_ptr<Logger>> loggers;
     };
 
     extern Logger *core_logger;

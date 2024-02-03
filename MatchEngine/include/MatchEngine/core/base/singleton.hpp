@@ -5,7 +5,6 @@
 #include <stdexcept>
 
 namespace MatchEngine {
-
     // 单例类
     template <class T>
     class Singleton {
