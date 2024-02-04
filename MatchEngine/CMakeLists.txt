@@ -2,7 +2,10 @@ project(MatchEngine)
 
 file(GLOB_RECURSE source CONFIGURE_DEPENDS src/MatchEngine/*.cpp)
 
+
 add_library(MatchEngine SHARED ${source})
+
+# MatchEngineParseHeaders(MatchEngine include .)
 
 target_link_libraries(MatchEngine PUBLIC Match)
 

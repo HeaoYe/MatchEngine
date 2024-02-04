@@ -1,5 +1,7 @@
 #include <MatchEngine/engine/engine.hpp>
 #include <MatchEngine/function/user_interface.hpp>
+#include <MatchEngine/core/reflect/reflect_helper.hpp>
+#include <MatchEngine/core/reflect/reflect_macro.hpp>
 #include "internal.hpp"
 #include <iostream>
 
@@ -14,6 +16,8 @@ namespace MatchEngine {
             return false;
         }
         global_runtime_context = new RuntimeContext();
+
+        MatchEngineParser_RegisterReflectProperties();
 
         // 初始化日志系统
         global_runtime_context->logger_system.initialize(Logger::Level::eInfo);
@@ -60,6 +64,8 @@ namespace MatchEngine {
         global_runtime_context->logger_system.destory();
         client_logger = nullptr;
         core_logger = nullptr;
+        
+        ReflectHelper::DestroyReflectHelper();
         
         delete global_runtime_context;
         global_runtime_context = nullptr;
