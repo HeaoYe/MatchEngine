@@ -2,8 +2,12 @@
 #include <iostream>
 // 引入自动生成头文件, 包含自动生成的序列化与反序列化函数
 #include <MatchEngine_AutoGenerate.hpp>
+#include "reflect_test.hpp"
 
 int main() {
+    // 使用 MatchEngine 提供的用户接口 命名空间
+    using namespace MatchEngine::UserInterface;
+
     MatchEngine::MatchEngine engine;
 
     // 引擎初始化入口
@@ -17,7 +21,7 @@ int main() {
     // 使用反射
 
     // 获取反射类信息
-    auto &class_MyRC = MatchEngine::ReflectHelper::GetClassByName("My RRR CCC");
+    auto &class_MyRC = reflect->getClassByName("My RRR CCC");
     // 通过反射可以访问私有成员变量 或 成员函数
 
     // 遍历获取反射类
@@ -105,23 +109,67 @@ int main() {
 
     MCH_CLIENT_INFO("...........................")
 
-    // 序列化
-    MatchEngine::SerializeStream ss;
-    person.speak();
-    ss << person;
-    auto time = person.askTime(9);
-    ss << time;
+    {
+        // 序列化
+        MatchEngine::SerializeStream ss;
+        person.speak();
+        ss << person;
+        auto time = person.askTime(9);
+        ss << time;
 
-    HJDGAUC::BBCUIAHCS::ACIUS::MyReflectClass person2;
-    Time time_output;
-    // 反序列化
-    MatchEngine::DeserializeStream ds(std::move(ss));
-    ds >> time_output;
-    MCH_CLIENT_INFO("{} {} {}", time.year, time.month, time.day)
-    MCH_CLIENT_INFO("{} {} {}", time_output.year, time_output.month, time_output.day)
-    person2.speak();
-    ds >> person2;
-    person2.speak();
+        HJDGAUC::BBCUIAHCS::ACIUS::MyReflectClass person2;
+        Time time_output;
+        // 反序列化
+        MatchEngine::DeserializeStream ds(std::move(ss));
+        ds >> time_output;
+        MCH_CLIENT_INFO("{} {} {}", time.year, time.month, time.day)
+        MCH_CLIENT_INFO("{} {} {}", time_output.year, time_output.month, time_output.day)
+        person2.speak();
+        ds >> person2;
+        person2.speak();
+    }
+
+    MCH_CLIENT_INFO("...........................")
+
+    {
+        auto &class_master = reflect->getClassByName("Master");
+        auto &class_child = reflect->getClassByName("Child");
+
+        auto *child_object = class_child.createObject();
+
+        MCH_CLIENT_INFO(child_object->getValue<std::string>("name"));
+
+        // 使用反射获取父类的成员变量
+        auto &member_max = class_master.getMember("max");
+        Child *ptr = child_object->release<Child>();
+        auto max = member_max.getValueByPtr<uint32_t>(ptr);
+
+        MCH_CLIENT_INFO(max)
+
+
+        member_max.setValueByPtr<uint32_t>(ptr, 0);
+        MCH_CLIENT_INFO(member_max.getValueByPtr<uint32_t>(ptr))
+
+        // 因为序列化不会存储父类信息
+        MatchEngine::SerializeStream ss;
+        ss << *ptr;
+
+        Child child2;
+        MatchEngine::DeserializeStream ds(std::move(ss));
+        ds >> child2;
+
+        // 所以child2.max = 1234567890
+        // 启用父类序列化后
+        // child2.max 变为 0
+        MCH_CLIENT_INFO(member_max.getValueByPtr<uint32_t>(&child2))
+
+        auto &master_func = class_master.getFunction("func");
+        auto &func = class_child.getFunction("func");
+        func.invokeByPtr(&child2);
+        master_func.invokeByPtr(&child2);
+        child2.num = 99.2;
+        func.invokeByPtr(&child2);
+    }
 
     // 引擎运行入口
     // engine.run();

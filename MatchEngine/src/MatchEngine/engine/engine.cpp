@@ -1,7 +1,5 @@
 #include <MatchEngine/engine/engine.hpp>
-#include <MatchEngine/function/user_interface.hpp>
-#include <MatchEngine/core/reflect/reflect_helper.hpp>
-#include <MatchEngine/core/reflect/reflect_macro.hpp>
+#include <MatchEngine/function/user_interface/user_interface.hpp>
 #include "internal.hpp"
 #include <iostream>
 
@@ -17,12 +15,19 @@ namespace MatchEngine {
         }
         global_runtime_context = new RuntimeContext();
 
-        MatchEngineParser_RegisterReflectProperties();
+        // 加载反射系统
+        global_runtime_context->reflect_system.initialize();
+        UserInterface::reflect.ptr = global_runtime_context->reflect_system.getInstance();
+        if (!checkRuntimeSystem(UserInterface::reflect.ptr)) {
+            std::cout << "Failed initialize " << global_runtime_context->reflect_system->getSystemName() << "." << std::endl;
+            return false;
+        }
+        global_runtime_context->reflect_system->registerReflectProperties();
 
         // 初始化日志系统
         global_runtime_context->logger_system.initialize(Logger::Level::eInfo);
-        logger_system.ptr = global_runtime_context->logger_system.getInstance();
-        if (!checkRuntimeSystem(logger_system.ptr)) {
+        UserInterface::logger_system.ptr = global_runtime_context->logger_system.getInstance();
+        if (!checkRuntimeSystem(UserInterface::logger_system.ptr)) {
             std::cout << "Failed initialize " << global_runtime_context->logger_system->getSystemName() << "." << std::endl;
             return false;
         }
@@ -35,15 +40,15 @@ namespace MatchEngine {
 
         // 初始化输入系统
         global_runtime_context->input_system.initialize();
-        input.ptr = global_runtime_context->input_system.getInstance();
-        if (!checkRuntimeSystem(input.ptr)) {
+        UserInterface::input.ptr = global_runtime_context->input_system.getInstance();
+        if (!checkRuntimeSystem(UserInterface::input.ptr)) {
             return false;
         }
 
         // 初始化事件系统
         global_runtime_context->event_system.initialize();
-        event_system.ptr = global_runtime_context->event_system.getInstance();
-        if (!checkRuntimeSystem(event_system.ptr)) {
+        UserInterface::event_system.ptr = global_runtime_context->event_system.getInstance();
+        if (!checkRuntimeSystem(UserInterface::event_system.ptr)) {
             return false;
         }
 
@@ -52,20 +57,25 @@ namespace MatchEngine {
 
     void MatchEngine::destroy() {
         // 销毁事件系统
+        UserInterface::event_system.ptr = nullptr;
         global_runtime_context->event_system.destory();
 
         // 销毁输入系统
+        UserInterface::input.ptr = nullptr;
         global_runtime_context->input_system.destory();
 
         // 销毁窗口系统
         global_runtime_context->window_system.destory();
 
         // 销毁日志系统
+        UserInterface::logger_system.ptr = nullptr;
         global_runtime_context->logger_system.destory();
         client_logger = nullptr;
         core_logger = nullptr;
         
-        ReflectHelper::DestroyReflectHelper();
+        // 销毁反射系统
+        UserInterface::reflect.ptr = nullptr;
+        global_runtime_context->reflect_system.destory();
         
         delete global_runtime_context;
         global_runtime_context = nullptr;
@@ -82,7 +92,7 @@ namespace MatchEngine {
         if (global_runtime_context == nullptr) {
             return false;
         }
-        if (global_runtime_context->logger_system->getState() != RuntimeSystem::State::eInitialized) {
+        if ((UserInterface::logger_system.ptr != nullptr) && (global_runtime_context->logger_system->getState() != RuntimeSystem::State::eInitialized)) {
             return false;
         }
         switch (system->getState()) {

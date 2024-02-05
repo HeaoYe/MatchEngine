@@ -1,8 +1,9 @@
 #pragma once
 
+#include <MatchEngine/core/base/runtime_system.hpp>
 #include <MatchEngine/core/reflect/class_descriptor.hpp>
-#include <MatchEngine/core/reflect/reflect_data.hpp>
 #include <MatchEngine/core/reflect/object.hpp>
+#include<MatchEngine/function/user_interface/pointer_wrapper.hpp>
 
 namespace MatchEngine {
     // 类描述符构建者, 由ClassBuilder类构建ClassDescriptor
@@ -29,17 +30,7 @@ namespace MatchEngine {
             };
         }
 
-        ~ClassBuilder() {
-            if (descriptor == nullptr) {
-                return;
-            }
-            if (classes.find(descriptor->name) == classes.end()) {
-                classes.insert(std::make_pair(descriptor->name, descriptor));
-            } else {
-                std::cout << "Class " << descriptor->name << " has been added." << std::endl;
-                delete descriptor;
-            }
-        }
+        ~ClassBuilder();
 
         ClassBuilder(ClassBuilder &&rhs) {
             this->descriptor = rhs.descriptor;
@@ -78,4 +69,46 @@ namespace MatchEngine {
     private:
         ClassDescriptor *descriptor = nullptr;
     };
+
+    // 反射系统作为运行时系统被加载到引擎中
+    class ReflectSystem final : public RuntimeSystem {
+        NoCopyMoveConstruction(ReflectSystem)
+        template <class C>
+        friend class ClassBuilder;
+        friend class MatchEngine;
+    public:
+        ReflectSystem();
+        ~ReflectSystem() override;
+
+        template <class C>
+        ClassBuilder<C> addClass(const std::string &name) {
+            return std::move(ClassBuilder<C>(name));
+        }
+
+        const ClassDescriptor &getClassByName(const std::string &name);
+
+        std::string getSystemName() const override { return "ReflectSystem"; }
+    private:
+        void registerReflectProperties();
+    private:
+        std::map<std::string, ClassDescriptor *> classes;
+    };
+
+    namespace UserInterface {
+        // 向用户提供反射接口
+        extern PointerWrapper<class ReflectSystem> reflect;
+    }
+
+    template <class C>
+    ClassBuilder<C>::~ClassBuilder() {
+        if (descriptor == nullptr) {
+            return;
+        }
+        if (UserInterface::reflect->classes.find(descriptor->name) == UserInterface::reflect->classes.end()) {
+            UserInterface::reflect->classes.insert(std::make_pair(descriptor->name, descriptor));
+        } else {
+            std::cout << "Class " << descriptor->name << " has been added." << std::endl;
+            delete descriptor;
+        }
+    }
 }

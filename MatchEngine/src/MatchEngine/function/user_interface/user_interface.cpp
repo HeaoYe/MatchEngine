@@ -1,6 +1,7 @@
-#include <MatchEngine/function/user_interface.hpp>
+#include <MatchEngine/function/user_interface/user_interface.hpp>
 
-namespace MatchEngine {
+namespace MatchEngine::UserInterface {
+    PointerWrapper<ReflectSystem> reflect { nullptr };
     PointerWrapper<LoggerSystem> logger_system { nullptr };
     PointerWrapper<InputSystem> input {nullptr};
     PointerWrapper<EventSystem> event_system { nullptr };

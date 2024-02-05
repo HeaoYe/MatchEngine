@@ -1,7 +1,7 @@
 project(MatchEngineParser)
 
 function (MatchEngineParseHeaders TARGET_NAME INPUT_DIR OUTPUT_DIR)
-    file(GLOB_RECURSE headers CONFIGURE_DEPENDS ${INPUT_DIR}/*.hpp ${INPUT_DIR}/*.h)
+    file(GLOB_RECURSE headers CONFIGURE_DEPENDS ${INPUT_DIR}/*.hpp ${INPUT_DIR}/*.h $ENV{MATCHENGINE_INCLUDE_DIR}/*.hpp $ENV{MATCHENGINE_INCLUDE_DIR}/*.h)
 
     find_program(PYTHON_BIN REQUIRED python3)
 
@@ -18,5 +18,6 @@ endfunction ()
 
 function (MatchEngineSolveDependency TARGET_NAME)
     add_dependencies(${TARGET_NAME} ${TARGET_NAME}_AUTO_GENERATE)
+    add_dependencies(${TARGET_NAME}_AUTO_GENERATE MatchEngine)
     target_include_directories(${TARGET_NAME} PRIVATE $ENV{${TARGET_NAME}_OUTPUT_DIR}/include)
 endfunction ()

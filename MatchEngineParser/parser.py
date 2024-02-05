@@ -75,10 +75,11 @@ class FileParser:
         self.match_reflect_class = re.compile(r"\s*REFLECT_CLASS\s*\(.*?\)\s*")
         self.match_reflect_member = re.compile(r"\s*REFLECT_MEMBER\s*\(.*?\)\s*")
         self.match_reflect_function = re.compile(r"\s*REFLECT_FUNCTION\s*\(.*?\)\s*")
-        self.match_reflect_member_type = re.compile(r".*?([a-zA-Z_]+?\w*)\s*;")
+        self.match_reflect_member_type = re.compile(r".*?([a-zA-Z_]+?\w*)\s*(\{.*\}\s*)?(\s*=\s*.+)?;")
         self.match_reflect_funtion_type = re.compile(r".*?([a-zA-Z_]+?\w*)\s*\(.*\).*")
         self.match_serializable_class = re.compile(r"\s*REFLECT_CLASS\s*\(.*?SERIALIZABLE_CLASS.*?\)\s*")
         self.match_serializable_class_only = re.compile(r"\s*REFLECT_CLASS\s*\(.*?SERIALIZABLE_CLASS_ONLY.*?\)\s*")
+        self.match_serialize_parent_class = re.compile(r"\s*REFLECT_CLASS\s*\(.*?SERIALIZE_PARENT_CLASS.*?\)\s*")
         self.match_serializable_member = re.compile(r"\s*REFLECT_MEMBER\s*\(.*?SERIALIZABLE_MEMBER.*?\)\s*")
         self.match_serializable_member_only = re.compile(r"\s*REFLECT_MEMBER\s*\(.*?SERIALIZABLE_MEMBER_ONLY.*?\)\s*")
         self.match_name = re.compile(r".*?NAME\s*\=\s*\"(.*?)\".*")
@@ -91,6 +92,7 @@ class FileParser:
             raf = RemoveAnnotationFile(f)
             if raf.need_parse:
                 self.parse_namespace("", raf, "")
+            return raf.need_parse
     
     def parse_namespace(self, line, f, prefix):
         count = line.count("{") - line.count("}")
@@ -117,6 +119,7 @@ class FileParser:
     def parse_reflect_class(self, line, f, prefix):
         count = 0
         class_type = ""
+        master_type = ""
         class_name = ""
         member_names = []
         member_aliases = []
@@ -126,6 +129,7 @@ class FileParser:
 
         serializable_class = bool(self.match_serializable_class.match(line))
         serializable_class_only = bool(self.match_serializable_class_only.match(line))
+        serialize_parent_class = bool(self.match_serialize_parent_class.match(line))
 
         names = self.match_name.findall(line)
         if names:
@@ -134,7 +138,11 @@ class FileParser:
             line = f.readline()
             # print(line, count)
             if count == 0:
-                class_type = prefix + re.findall(r"[class|struct]\s*([a-zA-Z_]+)\s*{", line)[0]
+                class_type, _, master_type = re.findall(r"[class|struct]\s*([a-zA-Z0-9_:]*)\s*(\:.*?([a-zA-Z0-9_:]*)\s*)?{", line)[0]
+                if not master_type.startswith("::"):
+                    master_type = prefix + master_type
+                class_type = prefix + class_type
+                # print(class_type, master_type)
                 if not class_name:
                     class_name = class_type
             if bool(self.match_reflect_class.match(line)):
@@ -155,7 +163,7 @@ class FileParser:
                     member_declare = f.readline()
                     count += member_declare.count("{")
                     count -= member_declare.count("}")
-                    member_names.append(self.match_reflect_member_type.findall(member_declare)[0])
+                    member_names.append(self.match_reflect_member_type.findall(member_declare)[0][0])
                     names = self.match_name.findall(line)
                     if names:
                         member_aliases.append(names[0])
@@ -173,7 +181,7 @@ class FileParser:
                         function_aliases.append(function_names[-1])
         
         if not serializable_class_only:
-            self.register_code_fragment += (f'    ::MatchEngine::ReflectHelper::AddClass<{class_type}>("{class_name}")')
+            self.register_code_fragment += (f'    ::MatchEngine::UserInterface::reflect->addClass<{class_type}>("{class_name}")')
             for i in range(len(member_names)):
                 if not (serializable_class and member_serializables[i][1]):
                     self.register_code_fragment += (f'\n        .addMember("{member_aliases[i]}", &{class_type}::{member_names[i]})')
@@ -185,19 +193,32 @@ class FileParser:
             for i in range(len(member_names)):
                 if member_serializables[i][0]:
                     serializable_members.append(member_names[i])
-            self.serialize_code_fragment += ('template <>\n')
-            self.serialize_code_fragment += (f'struct ::MatchEngine::SerializeTrait<{class_type}> {"{"}\n')
-            self.serialize_code_fragment += (f'    static void serialize(SerializeStream &ss, const {class_type} &rhs) {"{"}\n')
+            self.serialize_code_fragment += 'template <>\n'
+            self.serialize_code_fragment += f'struct ::MatchEngine::SerializeTrait<{class_type}> {"{"}\n'
+            self.serialize_code_fragment += f'    static void serialize(SerializeStream &ss, const {class_type} &rhs) {"{"}\n'
             if serializable_members:
-                self.serialize_code_fragment += (f'        {" << rhs.".join(["ss"] + serializable_members)};\n')
-            self.serialize_code_fragment += (f'    {"}"}\n')
-            self.serialize_code_fragment += (f'\n')
+                self.serialize_code_fragment += f'        {" << rhs.".join(["ss"] + serializable_members)}'
+            if serialize_parent_class:
+                if not serializable_members:
+                    self.serialize_code_fragment += f'ss'
+                self.serialize_code_fragment += f' << ((const {master_type} &)rhs)'
+            if serializable_members:
+                self.serialize_code_fragment += f';\n'
+            self.serialize_code_fragment += f'    {"}"}\n'
+            self.serialize_code_fragment += f'\n'
             serializable_members.reverse()
-            self.serialize_code_fragment += (f'    static void deserialize(DeserializeStream &ds, {class_type} &rhs) {"{"}\n')
+            self.serialize_code_fragment += f'    static void deserialize(DeserializeStream &ds, {class_type} &rhs) {"{"}\n'
             if serializable_members:
-                self.serialize_code_fragment += (f'        {" >> rhs.".join(["ds"] + serializable_members)};\n')
-            self.serialize_code_fragment += (f'    {"}"}\n')
-            self.serialize_code_fragment += ('};\n\n')
+                self.serialize_code_fragment += f'        ds'
+            if serialize_parent_class:
+                if not serializable_members:
+                    self.serialize_code_fragment += f'        ds'
+                self.serialize_code_fragment += f' >> (({master_type} &)rhs)'
+            if serializable_members:
+                self.serialize_code_fragment += f' >> rhs.'
+                self.serialize_code_fragment += f'{" >> rhs.".join(serializable_members)};\n'
+            self.serialize_code_fragment += f'    {"}"}\n'
+            self.serialize_code_fragment += '};\n\n'
 
 
 # 解析文件并自动生成代码
@@ -219,33 +240,39 @@ if __name__ == "__main__":
     
     print(header_filename, source_filename)
 
+    header_code_fragment = ""
+    source_code_fragment = ""
+    header_code_includes = []
+    source_code_includes = []
+
+    for header in headers:
+        parser = FileParser(header)
+        if parser.parse():
+            if parser.serialize_code_fragment:
+                header_code_includes.append(header)
+                header_code_fragment += parser.serialize_code_fragment
+            if parser.register_code_fragment:
+                source_code_includes.append(header)
+                source_code_fragment += parser.register_code_fragment
+
     write_header = open(header_filename, "w")
     write_source = open(source_filename, "w")
 
     write_header.write("#pragma once\n\n")
     write_header.write("#include <MatchEngine/core/serialize/specific_serialize_trait.hpp>\n\n")
+    write_source.write("#include <MatchEngine/function/user_interface/user_interface.hpp>\n\n")
 
-    write_source.write("#include <MatchEngine/core/reflect/reflect_helper.hpp>\n\n")
-
-    for header_file in headers:
-        if header_file != header_filename:
-            write_header.write(f'#include "{header_file}"\n')
-            write_source.write(f'#include "{header_file}"\n')
+    for include_filename in header_code_includes:
+        write_header.write(f'#include "{include_filename}"\n')
+    for include_filename in source_code_includes:
+        write_source.write(f'#include "{include_filename}"\n')
 
     write_header.write("\n")
+    write_header.write(header_code_fragment)
+
     write_source.write("\nvoid MatchEngineParser_RegisterReflectProperties() {\n")
-
-    for header in headers:
-        parser = FileParser(header)
-        parser.parse()
-        
-        write_header.write(parser.serialize_code_fragment)
-        write_source.write(parser.register_code_fragment)
-
+    write_source.write(source_code_fragment)
     write_source.write("}\n")
-
-    write_header.flush()
-    write_source.flush()
 
     write_header.close()
     write_source.close()

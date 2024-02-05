@@ -1,12 +1,8 @@
 #pragma once
 
-#include <MatchEngine/core/logger/logger_system.hpp>
-#include <MatchEngine/function/input/input_system.hpp>
-#include <MatchEngine/function/event/event_system.hpp>
+#include <MatchEngine/core/base/macro.hpp>
 
 namespace MatchEngine {
-    // 用户接口
-
     class MatchEngine;
     
     // 包装指针,防止用户delete游戏引擎的运行时系统
@@ -22,9 +18,4 @@ namespace MatchEngine {
     private:
         T *ptr { nullptr };
     };
-
-    // 提供给用户使用的运行时系统
-    extern PointerWrapper<LoggerSystem> logger_system;
-    extern PointerWrapper<InputSystem> input;
-    extern PointerWrapper<EventSystem> event_system;
 }

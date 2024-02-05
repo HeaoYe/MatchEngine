@@ -10,14 +10,14 @@ namespace MatchEngine {
     
     const ReflectMemberWrapper &ClassDescriptor::getMember(const std::string &name) const {
         if (members.find(name) == members.end()) {
-            MCH_CORE_ERROR("No member named {} in class.", this->name)
+            MCH_CORE_ERROR("No member named {} in class {}.", name, this->name)
         }
         return members.at(name);
     }
     
     const ReflectFunctionWrapper &ClassDescriptor::getFunction(const std::string &name) const {
         if (functions.find(name) == functions.end()) {
-            MCH_CORE_ERROR("No function named {} in class {}.", this->name)
+            MCH_CORE_ERROR("No function named {} in class {}.", name, this->name)
         }
         return functions.at(name);
     }
