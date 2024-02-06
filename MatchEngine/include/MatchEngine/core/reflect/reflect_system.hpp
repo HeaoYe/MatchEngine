@@ -3,7 +3,7 @@
 #include <MatchEngine/core/base/runtime_system.hpp>
 #include <MatchEngine/core/reflect/class_descriptor.hpp>
 #include <MatchEngine/core/reflect/object.hpp>
-#include<MatchEngine/function/user_interface/pointer_wrapper.hpp>
+#include<MatchEngine/core/base/pointer_wrapper.hpp>
 
 namespace MatchEngine {
     // 类描述符构建者, 由ClassBuilder类构建ClassDescriptor
@@ -27,6 +27,10 @@ namespace MatchEngine {
 
             descriptor->create_object_by_ptr_callback = [descriptor_ptr = descriptor](void *ptr) {
                 return new Object(descriptor_ptr, static_cast<C *>(ptr));
+            };
+
+            descriptor->delete_callback = [](void *ptr) {
+                delete static_cast<C *>(ptr);
             };
         }
 
@@ -72,22 +76,18 @@ namespace MatchEngine {
 
     // 反射系统作为运行时系统被加载到引擎中
     class ReflectSystem final : public RuntimeSystem {
-        NoCopyMoveConstruction(ReflectSystem)
         template <class C>
         friend class ClassBuilder;
         friend class MatchEngine;
+        DECLARE_RUNTIME_SYSTEM(ReflectSystem)
     public:
-        ReflectSystem();
-        ~ReflectSystem() override;
-
         template <class C>
         ClassBuilder<C> addClass(const std::string &name) {
             return std::move(ClassBuilder<C>(name));
         }
 
+        bool hasClass(const std::string &name);
         const ClassDescriptor &getClassByName(const std::string &name);
-
-        std::string getSystemName() const override { return "ReflectSystem"; }
     private:
         void registerReflectProperties();
     private:

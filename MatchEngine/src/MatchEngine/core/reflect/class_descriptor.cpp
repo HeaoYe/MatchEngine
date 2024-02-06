@@ -37,4 +37,12 @@ namespace MatchEngine {
     Object *ClassDescriptor::createObject(void *ptr) const {
         return static_cast<Object *>(create_object_by_ptr_callback(ptr));
     }
+
+    void ClassDescriptor::deleteClass(void *ptr) const {
+        delete_callback(ptr);
+    }
+
+    void ClassDescriptor::deleteObject(Object *ptr) const {
+        delete ptr;
+    }
 }

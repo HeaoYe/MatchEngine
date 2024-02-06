@@ -30,6 +30,12 @@ namespace MatchEngine {
         SerializeTrait<T>::deserialize(lhs, rhs);
         return lhs;
     };
+
+    template <class T>
+    std::enable_if_t<std::is_constructible_v<T>, DeserializeStream> &operator>>(DeserializeStream &lhs, T *rhs) {
+        SerializeTrait<T>::deserialize(lhs, *rhs);
+        return lhs;
+    };
     
     // 基础类型反序列化
     template <class T>

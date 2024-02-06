@@ -23,8 +23,12 @@ namespace MatchEngine {
         MatchEngineParser_RegisterReflectProperties();
     }
 
+    bool ReflectSystem::hasClass(const std::string &name) {
+        return classes.find(name) != classes.end();
+    }
+
     const ClassDescriptor &ReflectSystem::getClassByName(const std::string &name) {
-        if (classes.find(name) == classes.end()) {
+        if (!hasClass(name)) {
             MCH_CORE_ERROR("No class named {}.", name);
             static ClassDescriptor *empty = nullptr;
             return *empty;

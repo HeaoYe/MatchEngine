@@ -18,6 +18,7 @@ namespace MatchEngine {
     }
 
     void InputSystem::swapState() {
+        memcpy(&input_states[!current_state_index], &input_states[current_state_index], sizeof(InputState));
         current_state_index = !current_state_index;
     }
 

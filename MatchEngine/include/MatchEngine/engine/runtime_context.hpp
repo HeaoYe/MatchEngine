@@ -6,6 +6,9 @@
 #include <MatchEngine/function/window/window_system.hpp>
 #include <MatchEngine/function/input/input_system.hpp>
 #include <MatchEngine/function/event/event_system.hpp>
+#include <MatchEngine/function/game_framework/component_type_uuid_system.hpp>
+#include <MatchEngine/function/game_framework/scene_manager.hpp>
+#include <MatchEngine/function/resource/resource_system.hpp>
 
 namespace MatchEngine {
     // 管理全部运行时系统
@@ -15,5 +18,8 @@ namespace MatchEngine {
         Singleton<WindowSystem> window_system;
         Singleton<InputSystem> input_system;
         Singleton<EventSystem> event_system;
+        Singleton<ComponentTypeUUIDSystem> component_type_uuid_system;
+        Singleton<SceneManager> scene_manager;
+        Singleton<ResourceSystem> resource_system;
     };
 }

@@ -138,7 +138,7 @@ class FileParser:
             line = f.readline()
             # print(line, count)
             if count == 0:
-                class_type, _, master_type = re.findall(r"[class|struct]\s*([a-zA-Z0-9_:]*)\s*(\:.*?([a-zA-Z0-9_:]*)\s*)?{", line)[0]
+                class_type, _, _, master_type = re.findall(r"[class|struct]\s*([a-zA-Z0-9_:]*)(\s*final)?\s*(\:.*?([a-zA-Z0-9_:]*)\s*)?{", line)[0]
                 if not master_type.startswith("::"):
                     master_type = prefix + master_type
                 class_type = prefix + class_type
@@ -195,7 +195,7 @@ class FileParser:
                     serializable_members.append(member_names[i])
             self.serialize_code_fragment += 'template <>\n'
             self.serialize_code_fragment += f'struct ::MatchEngine::SerializeTrait<{class_type}> {"{"}\n'
-            self.serialize_code_fragment += f'    static void serialize(SerializeStream &ss, const {class_type} &rhs) {"{"}\n'
+            self.serialize_code_fragment += f'    static void serialize(SerializeStream &ss, const ::{class_type} &rhs) {"{"}\n'
             if serializable_members:
                 self.serialize_code_fragment += f'        {" << rhs.".join(["ss"] + serializable_members)}'
             if serialize_parent_class:
@@ -207,7 +207,7 @@ class FileParser:
             self.serialize_code_fragment += f'    {"}"}\n'
             self.serialize_code_fragment += f'\n'
             serializable_members.reverse()
-            self.serialize_code_fragment += f'    static void deserialize(DeserializeStream &ds, {class_type} &rhs) {"{"}\n'
+            self.serialize_code_fragment += f'    static void deserialize(DeserializeStream &ds, ::{class_type} &rhs) {"{"}\n'
             if serializable_members:
                 self.serialize_code_fragment += f'        ds'
             if serialize_parent_class:

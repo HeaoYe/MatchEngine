@@ -21,6 +21,9 @@ namespace MatchEngine {
 
         class Object *createObject() const;
         class Object *createObject(void *ptr) const;
+
+        void deleteClass(void *ptr) const;
+        void deleteObject(class Object *ptr) const;
     private:
         std::string name;
         std::map<std::string, ReflectMemberWrapper> members;
@@ -29,5 +32,6 @@ namespace MatchEngine {
         std::vector<std::string> function_names;
         std::function<void *()> create_object_callback;
         std::function<void *(void *)> create_object_by_ptr_callback;
+        std::function<void(void *)> delete_callback;
     };
 }

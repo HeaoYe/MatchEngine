@@ -7,36 +7,38 @@ namespace MatchEngine {
     // Object 就是 Object
     class Object {
     public:
-        template <class C>
-        Object(const ClassDescriptor *descriptor, C *raw_ptr) : descriptor(descriptor), ptr(raw_ptr) {
-            delete_callback = [raw_ptr]() {
-                delete raw_ptr;
-            };
-        }
+        Object(const ClassDescriptor *descriptor, const void *raw_ptr, bool control_ptr = true) : descriptor(descriptor), ptr(const_cast<void *>(raw_ptr)), control_ptr(control_ptr) {}
 
         ~Object() {
-            if (ptr != nullptr) {
-                delete_callback();
+            if (ptr != nullptr && control_ptr) {
+                descriptor->deleteClass(ptr);
                 ptr = nullptr;
             }
         }
 
-        AnyWrapper getValue(const std::string &name) {
+        bool castTo(const std::string &class_name);
+        void forceCastTo(const std::string &class_name);
+        void castTo(const ClassDescriptor &descriptor);
+
+        Object forceCast(const std::string &class_name);
+        Object cast(const ClassDescriptor &descriptor);
+
+        AnyWrapper getValue(const std::string &name) const {
             return std::move(descriptor->getMember(name).getValueByPtr(ptr));
         }
 
-        AnyWrapper getValueReference(const std::string &name) {
-            return std::move(descriptor->getMember(name).getValueReferenceByPtr(ptr));
+        AnyWrapper getValueMutReference(const std::string &name) {
+            return std::move(descriptor->getMember(name).getValueMutReferenceByPtr(ptr));
         }
         
         template <typename T>
-        T getValue(const std::string &name) {
+        const T &getValue(const std::string &name) const {
             return descriptor->getMember(name).getValueByPtr<T>(ptr);
         }
 
         template <typename T>
-        T &getValueReference(const std::string &name) {
-            return descriptor->getMember(name).getValueReferenceByPtr<T>(ptr);
+        T &getValueMutReference(const std::string &name) {
+            return descriptor->getMember(name).getValueMutReferenceByPtr<T>(ptr);
         }
 
         template <typename T>
@@ -60,9 +62,13 @@ namespace MatchEngine {
             ptr = nullptr;
             return static_cast<C *>(raw_ptr);
         }
+
+        void release() {
+            ptr = nullptr;
+        }
     private:
         const ClassDescriptor *descriptor;
         void *ptr;
-        std::function<void()> delete_callback;
+        bool control_ptr;
     };
 }

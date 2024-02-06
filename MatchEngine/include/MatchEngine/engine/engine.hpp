@@ -9,6 +9,7 @@ namespace MatchEngine {
         bool initialize();
         void destroy();
         void run();
+        void loadScene(const std::string &name);
     private:
         bool checkRuntimeSystem(const RuntimeSystem *system);
     };

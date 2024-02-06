@@ -9,11 +9,8 @@
 namespace MatchEngine {
     // 事件系统
     class EventSystem final : public RuntimeSystem {
-        NoCopyMoveConstruction(EventSystem)
+        DECLARE_RUNTIME_SYSTEM(EventSystem)
     public:
-        EventSystem();
-        ~EventSystem() override;
-
         void attachEventLayer(float priority, const std::string &name);
         void detachEventLayer(const std::string &name);
 
@@ -29,24 +26,22 @@ namespace MatchEngine {
 
         template <class Event>
         void removeEventListener(ListenerUUID<Event> uuid) {
-            if (uuid.asUuidType() == INVALID_UUID) {
+            if (uuid.asUUIDType() == INVALID_UUID) {
                 MCH_CORE_ERROR("Unavailable ListenerUUID.");
                 return;
             }
             bool found = false;
             for (auto &[layer_name, listeners] : Event::listeners) {
-                if (listeners.find(uuid.asUuidType()) != listeners.end()) {
-                    listeners.erase(uuid.asUuidType());
+                if (listeners.find(uuid.asUUIDType()) != listeners.end()) {
+                    listeners.erase(uuid.asUUIDType());
                     found = true;
                     break;
                 }
             }
             if (!found) {
-                MCH_CORE_ERROR("EventListener with uuid {} has been removed.", uuid.asUuidType())
+                MCH_CORE_ERROR("EventListener with uuid {} has been removed.", uuid.asUUIDType())
             }
         }
-        
-        std::string getSystemName() const override { return "EventSystem"; }
     private:
         template <class Event>
         void dispatch(Event event) {

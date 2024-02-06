@@ -52,10 +52,41 @@ namespace MatchEngine {
             return false;
         }
 
+        // 初始化组件类型UUID管理系统
+        global_runtime_context->component_type_uuid_system.initialize();
+        UserInterface::component_type_uuid_system.ptr = global_runtime_context->component_type_uuid_system.getInstance();
+        if (!checkRuntimeSystem(UserInterface::component_type_uuid_system.ptr)) {
+            return false;
+        }
+
+        // 初始化场景管理器
+        global_runtime_context->scene_manager.initialize();
+        if (!checkRuntimeSystem(global_runtime_context->scene_manager.getInstance())) {
+            return false;
+        }
+
+        // 初始化资源系统
+        global_runtime_context->resource_system.initialize();
+        UserInterface::resource_system.ptr = global_runtime_context->resource_system.getInstance();
+        if (!checkRuntimeSystem(UserInterface::resource_system.ptr)) {
+            return false;
+        }
+
         return true;
     }
 
     void MatchEngine::destroy() {
+        // 销毁资源系统
+        UserInterface::resource_system.ptr = nullptr;
+        global_runtime_context->resource_system.destory();
+
+        // 销毁场景管理器
+        global_runtime_context->scene_manager.destory();
+
+        // 销毁组件类型UUID管理系统
+        UserInterface::component_type_uuid_system.ptr = nullptr;
+        global_runtime_context->component_type_uuid_system.destory();
+
         // 销毁事件系统
         UserInterface::event_system.ptr = nullptr;
         global_runtime_context->event_system.destory();
@@ -84,8 +115,15 @@ namespace MatchEngine {
     void MatchEngine::run() {
         while (global_runtime_context->window_system->isAlive()) {
             global_runtime_context->window_system->pollEvents();
+
+            global_runtime_context->scene_manager->tick(0.03);
+            
             global_runtime_context->input_system->swapState();
         }
+    }
+
+    void MatchEngine::loadScene(const std::string &name) {
+        global_runtime_context->scene_manager->loadScene(name);
     }
 
     bool MatchEngine::checkRuntimeSystem(const RuntimeSystem *system) {

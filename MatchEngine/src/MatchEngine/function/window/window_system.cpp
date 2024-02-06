@@ -7,8 +7,7 @@ namespace MatchEngine {
         initializeRuntimeSystem();
 
         Match::setting.engine_name = "Match Engine";
-        // Match::setting.window_size = { 1920, 1080 };
-        Match::setting.window_size = { 10, 10 };
+        Match::setting.window_size = { 1920, 1080 };
         Match::setting.debug_mode = true;
         Match::set_log_level(Match::LogLevel::eError);
         Match::Initialize();

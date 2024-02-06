@@ -7,13 +7,13 @@
 namespace MatchEngine {
     // 输入系统
     class InputSystem final : public RuntimeSystem {
-        NoCopyMoveConstruction(InputSystem)
         friend class MatchEngine;
         friend class EventSystem;
+        DECLARE_RUNTIME_SYSTEM(InputSystem)
     private:
         enum class ButtonState : uint8_t {
+            eReleased = 0,
             ePressed,
-            eReleased,
         };
 
         struct InputState {
@@ -24,9 +24,6 @@ namespace MatchEngine {
             glm::dvec2 mouse_scroll;
         };
     public:
-        InputSystem();
-        ~InputSystem() override;
-
         bool isKeyPressed(Key key);
         bool wasKeyPressed(Key key);
         bool isKeyReleased(Key key);
@@ -56,8 +53,6 @@ namespace MatchEngine {
         double getLastMouseScrollX();
         double getMouseScrollY();
         double getLastMouseScrollY();
-
-        std::string getSystemName() const override { return "InputSystem"; }
     private:
         void swapState();
         InputState *currentState();

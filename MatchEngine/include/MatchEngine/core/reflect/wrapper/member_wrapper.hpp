@@ -72,7 +72,7 @@ namespace MatchEngine {
         }
 
         template <class C>
-        AnyWrapper getValueReference(C &obj) const {
+        AnyWrapper getValueMutReference(C &obj) const {
             return create_result_reference(getter_reference(static_cast<void *>(&obj)));
         }
 
@@ -82,7 +82,7 @@ namespace MatchEngine {
         }
 
         template <typename T, class C>
-        T &getValueReference(C &obj) const {
+        T &getValueMutReference(C &obj) const {
             return *std::any_cast<T *>(getter_reference(static_cast<void *>(&obj)));
         }
 
@@ -105,7 +105,7 @@ namespace MatchEngine {
             return create_result_const(getter_const(obj));
         }
 
-        AnyWrapper getValueReferenceByPtr(void *obj) const {
+        AnyWrapper getValueMutReferenceByPtr(void *obj) const {
             return create_result_reference(getter_reference(obj));
         }
 
@@ -115,7 +115,7 @@ namespace MatchEngine {
         }
 
         template <typename T>
-        T &getValueReferenceByPtr(void *obj) const {
+        T &getValueMutReferenceByPtr(void *obj) const {
             return *std::any_cast<T *>(getter_reference(obj));
         }
 

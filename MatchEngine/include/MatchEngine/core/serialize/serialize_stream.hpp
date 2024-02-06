@@ -38,6 +38,12 @@ namespace MatchEngine {
         return lhs;
     };
 
+    template <class T>
+    std::enable_if_t<std::is_constructible_v<SerializeTrait<T>>, SerializeStream> &operator<<(SerializeStream &lhs, const T *rhs) {
+        SerializeTrait<T>::serialize(lhs, *rhs);
+        return lhs;
+    };
+
     // 基础类型序列化
     template <class T>
     void SerializeTrait<T>::serialize(SerializeStream &ss, const T &rhs) {
