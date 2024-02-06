@@ -2,21 +2,23 @@
 
 #include <MatchEngine/core/base/runtime_system.hpp>
 #include <MatchEngine/game_framework/scene.hpp>
-#include <memory>
 
 namespace MatchEngine {
-    // 场景管理器
+    // 场景管理器, 管理多个场景
     class SceneManager final : public RuntimeSystem {
         DECLARE_RUNTIME_SYSTEM(SceneManager)
     public:
         bool hasRegisteredScene(const std::string &name);
-        void registerScene(std::unique_ptr<Game::Scene> scene);
+        PointerWrapper<Game::Scene> createScene(const std::string &name);
         void loadScene(const std::string &name);
-        void unloadScene();
 
+        void start();
+        void fixedTick();
         void tick(float dt);
+        void swap();
     private:
-        std::map<std::string, std::unique_ptr<Game::Scene>> scenes;
+        std::map<std::string, Game::Scene *> scenes;
         Game::Scene *active_scene { nullptr };
+        Game::Scene *change_scene { nullptr };
     };
 }

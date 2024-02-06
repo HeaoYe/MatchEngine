@@ -10,11 +10,9 @@
 #include <MatchEngine/function/user_interface/user_interface.hpp>
 
 #include <MatchEngine/game_framework/scene.hpp>
-#include <MatchEngine/game_framework/level.hpp>
-#include <MatchEngine/game_framework/game_object/game_object.hpp>
+#include <MatchEngine/game_framework/game_object.hpp>
 
 #include <MatchEngine/game_framework/component/component.hpp>
-#include <MatchEngine/game_framework/component/declare_component.hpp>
-#include <MatchEngine/game_framework/component/location/location_component.hpp>
+#include <MatchEngine/game_framework/component/transform/transform_component.hpp>
 
 #include <MatchEngine/engine/engine.hpp>

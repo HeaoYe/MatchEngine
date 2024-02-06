@@ -3,6 +3,7 @@
 #include <MatchEngine/core/reflect/reflect_system.hpp>
 
 namespace MatchEngine::Game {
+    // 未来编辑器可以通过反射获取组件的信息并编辑
     // RTTI 运行时类型接口
     class RTTI {
         DefaultNoCopyMoveConstruction(RTTI)

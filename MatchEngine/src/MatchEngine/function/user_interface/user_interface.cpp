@@ -5,6 +5,5 @@ namespace MatchEngine::UserInterface {
     PointerWrapper<LoggerSystem> logger_system { nullptr };
     PointerWrapper<InputSystem> input {nullptr};
     PointerWrapper<EventSystem> event_system { nullptr };
-    PointerWrapper<ComponentTypeUUIDSystem> component_type_uuid_system { nullptr };
-    PointerWrapper<ResourceSystem> resource_system { nullptr };
+    PointerWrapper<SceneManager> scene_manager { nullptr };
 }

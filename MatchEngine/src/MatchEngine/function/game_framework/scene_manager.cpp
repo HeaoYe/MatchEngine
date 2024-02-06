@@ -12,39 +12,56 @@ namespace MatchEngine {
         return scenes.find(name) != scenes.end();
     }
 
-    void SceneManager::registerScene(std::unique_ptr<Game::Scene> scene) {
-        scenes[scene->getSceneName()] = std::move(scene);
+    PointerWrapper<Game::Scene> SceneManager::createScene(const std::string &name) {
+        if (scenes.find(name) != scenes.end()) {
+            MCH_CORE_ERROR("Scene {} has been created.", name)
+            return nullptr;
+        }
+        auto *scene = new Game::Scene(name);
+        scenes.insert(std::make_pair(name, scene));
+        if (active_scene == nullptr) {
+            active_scene = scene;
+        }
+        return scene;
     }
 
     void SceneManager::loadScene(const std::string &name) {
-        unloadScene();
-        if (!hasRegisteredScene(name)) {
-            MCH_CORE_ERROR("Scene {} hasn't been registered.", name)
+        if (auto iter = scenes.find(name); iter != scenes.end()) {
+            change_scene = iter->second;
             return;
         }
-        active_scene = scenes.at(name).get();
-        active_scene->load();
+        MCH_CORE_ERROR("No scene named {}.", name);
+    }
+
+    void SceneManager::start() {
+        active_scene->start();
     }
     
-    void SceneManager::unloadScene() {
-        if (active_scene == nullptr) {
-            return;
-        }
-        active_scene->unload();
-        active_scene = nullptr;
+    void SceneManager::fixedTick() {
+        active_scene->fixedTick();
     }
-
+    
     void SceneManager::tick(float dt) {
-        if (active_scene == nullptr) {
+        active_scene->tick(dt);
+        active_scene->postTick(dt);
+    }
+    
+    void SceneManager::swap() {
+        if (change_scene == nullptr) {
             return;
         }
-        active_scene->tick(dt);
+        active_scene = change_scene;
+        active_scene->start();
+        change_scene = nullptr;
     }
-
+    
     SceneManager::~SceneManager() {
         destoryRuntimeSystem();
         state = RuntimeSystem::State::eExited;
 
+        for (auto [name, scene] : scenes) {
+            delete scene;
+        }
         scenes.clear();
     }
 }
