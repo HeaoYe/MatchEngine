@@ -14,5 +14,7 @@
 
 #include <MatchEngine/game_framework/component/component.hpp>
 #include <MatchEngine/game_framework/component/transform/transform_component.hpp>
+#include <MatchEngine/game_framework/component/mesh/mesh_component.hpp>
+#include <MatchEngine/game_framework/component/camera/camera_component.hpp>
 
 #include <MatchEngine/engine/engine.hpp>

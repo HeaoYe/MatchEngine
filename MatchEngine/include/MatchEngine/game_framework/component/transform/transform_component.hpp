@@ -8,7 +8,6 @@ namespace MatchEngine::Game {
     REFLECT_CLASS(NAME = "TransformComponent")
     class TransformComponent : public Component {
         DECLARE_COMPONENT(TransformComponent)
-        ALLOW_REFLECT_PRIVATE()
     public:
         REFLECT_MEMBER()
         glm::vec3 location { 0, 0, 0 };

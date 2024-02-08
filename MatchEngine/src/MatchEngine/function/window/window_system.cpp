@@ -10,7 +10,7 @@ namespace MatchEngine {
         Match::setting.window_size = { 1920, 1080 };
         Match::setting.debug_mode = true;
         Match::set_log_level(Match::LogLevel::eError);
-        Match::Initialize();
+        api_manager = &Match::Initialize();
         Match::set_log_level(Match::LogLevel::eInfo);
 
         state = RuntimeSystem::State::eInitialized;

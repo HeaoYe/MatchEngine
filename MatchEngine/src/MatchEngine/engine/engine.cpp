@@ -71,10 +71,17 @@ namespace MatchEngine {
             return false;
         }
 
+        global_runtime_context->render_system.initialize();
+        if (!checkRuntimeSystem(global_runtime_context->render_system.getInstance())) {
+            return false;
+        }
+
         return true;
     }
 
     void MatchEngine::destroy() {
+        global_runtime_context->render_system.destory();
+
         // 销毁场景管理器
         UserInterface::scene_manager.ptr = nullptr;
         global_runtime_context->scene_manager.destory();
@@ -122,9 +129,12 @@ namespace MatchEngine {
             global_runtime_context->window_system->pollEvents();
 
             global_runtime_context->scene_manager->tick(0.03);
-            global_runtime_context->scene_manager->swap();
-            
+
             global_runtime_context->input_system->swapState();
+
+            global_runtime_context->render_system->render();
+            
+            global_runtime_context->scene_manager->swap();
         }
 
         fixed_tick_thread.join();

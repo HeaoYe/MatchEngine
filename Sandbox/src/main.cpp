@@ -18,24 +18,20 @@ int main() {
 
     // 创建一个场景
     auto scene = scene_manager->createScene("My First Scene");
+    // 加载龙的Mesh, 未来会由AssetsManager完成
+    auto dragon_mesh_id = scene_manager->loadMesh("dragon.obj");
 
-    // 创建一个GameObject
-    auto person1 = scene->createGameObject("小明");
-    auto person2 = scene->createGameObject("小红");
+    // 创建龙和相机
+    auto dragon = scene->createGameObject("龙");
+    auto camera = scene->createGameObject("相机");
 
-    // 为GameObject添加组件
-    person1->addComponet(new MatchEngine::Game::TransformComponent);
-    person1->addComponet(new PersonController());
+    // 为龙添加组件
+    dragon->addComponet(new MatchEngine::Game::TransformComponent());
+    dragon->addComponet(new MatchEngine::Game::MeshComponent(dragon_mesh_id));
 
-    person2->addComponet(new MatchEngine::Game::TransformComponent);
-    person2->addComponet(new PersonController());
-    person2->addComponet(new Pen());
-
-    // 创建第二个场景
-    auto scene2 = scene_manager->createScene("My Second Scene");
-    auto person3 = scene2->createGameObject("无名氏");
-    person3->addComponet(new MatchEngine::Game::TransformComponent);
-    person3->addComponet(new PersonController());
+    // 为相机添加组件
+    camera->addComponet(new CameraController());
+    camera->addComponet(new MatchEngine::Game::CameraComponent());
 
     // 引擎运行入口
     engine.run();

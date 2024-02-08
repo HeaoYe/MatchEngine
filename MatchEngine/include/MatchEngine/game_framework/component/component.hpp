@@ -33,6 +33,11 @@ namespace MatchEngine::Game {
         ComponentTypeUUID uuid;    // set by game_object
     };
 
+    #define DECLARE_COMPONENT_CUSTOM_CONSTRUCTION(class_name) \
+        NoCopyMoveConstruction(class_name) \
+        DECLARE_RTTI(class_name) \
+    private: \
+
     #define DECLARE_COMPONENT(class_name) \
         DefaultNoCopyMoveConstruction(class_name) \
         DECLARE_RTTI(class_name) \

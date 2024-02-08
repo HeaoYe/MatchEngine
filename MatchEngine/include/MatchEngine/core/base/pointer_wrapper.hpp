@@ -17,4 +17,16 @@ namespace MatchEngine {
     private:
         T *ptr { nullptr };
     };
+
+    template<class T>
+    class ConstPointerWrapper {
+        friend MatchEngine;
+    public:
+        ConstPointerWrapper(const T *ptr) : ptr(ptr) {}
+        ~ConstPointerWrapper() { ptr = nullptr; }
+        
+        const T *operator->() const { return ptr; }
+    private:
+        const T *ptr { nullptr };
+    };
 }
