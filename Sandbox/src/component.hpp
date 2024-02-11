@@ -1,6 +1,7 @@
 #pragma once
 
 #include <MatchEngine/MatchEngine.hpp>
+#include <glm/gtx/rotate_vector.hpp>
 
 // 自定义组件
 
@@ -24,26 +25,39 @@ class CameraController : public MatchEngine::Game::Component {
 
         updateViewMatrix();
         camera->project = glm::perspective<float>(0.8, 1920 / 1080.0f, 0.1, 100);
+        camera->uploadProjectMatrix();
+        yaw = 0;
+        pitch = 0;
     }
 
     void onTick(float dt) override {
         // 控制相机的移动
         using namespace MatchEngine::UserInterface;
         using MatchEngine::Key;
+        using MatchEngine::MouseButton;
+        auto delta = input->getMouseDelta() * 0.2;
+        if (input->isMouseButtonPressed(MouseButton::eLeft)) {
+            yaw -= delta.x;
+            pitch = std::clamp<float>(pitch + delta.y, -89.0f, 89.0f);
+            updateViewMatrix();
+        }
+        auto d = glm::rotateY(glm::vec3(0.0f, 0.0f, 1.0f), glm::radians(yaw));
+        auto cd = glm::rotateY(d, glm::radians(90.0f));
+
         if (input->isKeyPressed(Key::eW)) {
-            location->z += dt;
+            *location += d * dt;
             updateViewMatrix();
         }
         if (input->isKeyPressed(Key::eS)) {
-            location->z -= dt;
-            updateViewMatrix();
-        }
-        if (input->isKeyPressed(Key::eD)) {
-            location->x -= dt;
+            *location -= d * dt;
             updateViewMatrix();
         }
         if (input->isKeyPressed(Key::eA)) {
-            location->x += dt;
+            *location += cd * dt;
+            updateViewMatrix();
+        }
+        if (input->isKeyPressed(Key::eD)) {
+            *location -= cd * dt;
             updateViewMatrix();
         }
         if (input->isKeyPressed(Key::eSpace)) {
@@ -57,10 +71,12 @@ class CameraController : public MatchEngine::Game::Component {
     }
 private:
     void updateViewMatrix() {
-        glm::vec3 view_direction = { 0, 0, 1 };
-        camera->view = glm::lookAt(*location, { 0, 0, 0 }, { 0, 1, 0 });
+        auto view_direction = glm::rotateY(glm::rotateX(glm::vec3(0, 0, 1), glm::radians(pitch)), glm::radians(yaw));
+        camera->view = glm::lookAt(*location, *location + view_direction, { 0, 1, 0 });
+        camera->uploadViewMatrix();
     }
 private:
     MatchEngine::Game::CameraComponent *camera;
     glm::vec3 *location;
+    float yaw, pitch;
 };

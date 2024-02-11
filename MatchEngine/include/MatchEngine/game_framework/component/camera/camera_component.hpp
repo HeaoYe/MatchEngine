@@ -9,13 +9,11 @@ namespace MatchEngine::Game {
     REFLECT_CLASS(NAME = "CameraComponent")
     class CameraComponent : public Component {
         DECLARE_COMPONENT(CameraComponent)
-    private:
-        void onStart() override;
-        void onTick(float dt) override;
+    public:
+        void uploadViewMatrix();
+        void uploadProjectMatrix();
     public:
         glm::mat4 view;
         glm::mat4 project;
-    protected:
-        RenderTargetID render_target_id;
     };
 }

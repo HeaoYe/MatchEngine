@@ -34,24 +34,6 @@ namespace MatchEngine {
         MCH_CORE_ERROR("No scene named {}.", name);
     }
     
-    MeshID SceneManager::loadMesh(const std::string &filename) {
-        MeshRawData data {};
-        static auto factory = global_runtime_context->window_system->getAPIManager()->create_resource_factory("thirdparty/Match/examples/Scene/resource");
-        auto model = factory->load_model(filename);
-        for (auto &vertex : model->vertices) {
-            data.positions.push_back(vertex.pos);
-            data.normals.push_back(vertex.normal);
-            data.tex_coords.push_back({ 0, 0 });
-            data.colors.push_back(vertex.color);
-        }
-        for (auto [name, mesh] : model->meshes) {
-            for (auto &index : mesh->indices) {
-                data.indices.push_back(index);
-            }
-        }
-        return global_runtime_context->render_system->getActiveSceneRenderer()->getMeshPool()->uploadMeshRawData(&data, 1024);
-    }
-
     void SceneManager::start() {
         active_scene->start();
         global_runtime_context->render_system->postActiveSceneStart();

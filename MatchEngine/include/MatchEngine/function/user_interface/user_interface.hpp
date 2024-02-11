@@ -6,6 +6,7 @@
 #include <MatchEngine/function/input/input_system.hpp>
 #include <MatchEngine/function/event/event_system.hpp>
 #include <MatchEngine/function/game_framework/scene_manager.hpp>
+#include <MatchEngine/function/asset/asset_system.hpp>
 
 namespace MatchEngine::UserInterface {
     // 用户接口
@@ -15,4 +16,5 @@ namespace MatchEngine::UserInterface {
     extern PointerWrapper<InputSystem> input;
     extern PointerWrapper<EventSystem> event_system;
     extern PointerWrapper<SceneManager> scene_manager;
+    extern PointerWrapper<AssetSystem> assets_system;
 }

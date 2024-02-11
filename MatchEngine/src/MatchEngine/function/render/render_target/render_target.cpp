@@ -16,6 +16,10 @@ namespace MatchEngine {
         clear_value = { 0.0f, 0.0f, 0.0f, 0.0f };
     }
 
+    void RenderTarget::setClearValue(float r, float b, float g, float a) {
+        clear_value = { r, g, b, a };
+    }
+
     RenderTarget::~RenderTarget() {
         image.reset();
     }

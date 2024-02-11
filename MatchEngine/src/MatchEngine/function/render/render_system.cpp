@@ -11,7 +11,7 @@ namespace MatchEngine {
     }
 
     void RenderSystem::createActiveSceneRenderer() {
-        active_renderer = new SceneRenderer(global_runtime_context->scene_manager->getActiveSceneName());
+        active_renderer = new SceneRenderer();
     }
 
     void RenderSystem::postActiveSceneStart() {
@@ -27,6 +27,10 @@ namespace MatchEngine {
             delete active_renderer;
             active_renderer = nullptr;
         }
+    }
+    
+    void RenderSystem::waitRenderDevice() {
+        vkDeviceWaitIdle(global_runtime_context->window_system->getAPIManager()->device->device);
     }
     
     RenderSystem::~RenderSystem() {

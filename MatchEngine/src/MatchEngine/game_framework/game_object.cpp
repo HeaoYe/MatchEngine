@@ -41,13 +41,13 @@ namespace MatchEngine::Game {
     }
 
     void GameObject::addComponet(Component *component) {
+        component->uuid = global_runtime_context->component_type_uuid_system->get(component->getClassName());
         if (component_map.find(component->getTypeUUID()) != component_map.end()) {
             MCH_CORE_ERROR("Component {} has been added.", component->getTypeUUID())
             return;
         }
-        component->setupRTTI();
         component->master = this;
-        component->uuid = global_runtime_context->component_type_uuid_system->get(component->getClassName());
+        component->setupRTTI();
         component_map.insert(std::make_pair(component->getTypeUUID(), component));
         components.push_back(component);
     }

@@ -76,10 +76,21 @@ namespace MatchEngine {
             return false;
         }
 
+        global_runtime_context->assets_system.initialize();
+        UserInterface::assets_system.ptr = global_runtime_context->assets_system.getInstance();
+        if (!checkRuntimeSystem(UserInterface::assets_system.ptr)) {
+            return false;
+        }
+
         return true;
     }
 
     void MatchEngine::destroy() {
+        global_runtime_context->render_system->waitRenderDevice();
+
+        UserInterface::assets_system.ptr = nullptr;
+        global_runtime_context->assets_system.destory();
+
         global_runtime_context->render_system.destory();
 
         // 销毁场景管理器

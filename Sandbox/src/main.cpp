@@ -18,19 +18,28 @@ int main() {
 
     // 创建一个场景
     auto scene = scene_manager->createScene("My First Scene");
-    // 加载龙的Mesh, 未来会由AssetsManager完成
-    auto dragon_mesh_id = scene_manager->loadMesh("dragon.obj");
 
-    // 创建龙和相机
-    auto dragon = scene->createGameObject("龙");
+    // 设置资产的根目录
+    assets_system->setRootDir("Sandbox/resource");
+    // 加载模型
+    auto dragon_mesh_id = assets_system->loadMesh("dragon_lods.obj");
+
+    // 创建相机
     auto camera = scene->createGameObject("相机");
 
-    // 为龙添加组件
-    dragon->addComponet(new MatchEngine::Game::TransformComponent());
-    dragon->addComponet(new MatchEngine::Game::MeshComponent(dragon_mesh_id));
+    // 创建8*8*8条龙
+    int n = 8, n2 = n / 2;
+    for (int i = 0; i < n * n * n; i ++) {
+        auto dragon = scene->createGameObject("龙");
+        auto t = new MatchEngine::Game::TransformComponent();
+        t->location = { i % n - n2, (i / n) % n - n2, ((i / n) / n) % n - n2 };
+        dragon->addComponet(t);
+        dragon->addComponet(new MatchEngine::Game::MeshComponent(dragon_mesh_id));
+    }
 
     // 为相机添加组件
     camera->addComponet(new CameraController());
+    camera->addComponet(new MatchEngine::Game::TransformComponent());
     camera->addComponet(new MatchEngine::Game::CameraComponent());
 
     // 引擎运行入口

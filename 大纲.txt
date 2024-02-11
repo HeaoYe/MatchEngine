@@ -58,3 +58,11 @@
     3.相机组件,允许每个相机捕获自己看到的画面
 
     4.下集修复DepthBuffer的Bug
+
+本期大纲
+
+    1.修复了DepthBuffer的Bug
+
+    2.改进渲染系统, 支持多级LOD, 支持视锥体剔除, 完全使用GPU Driven Pipeline
+
+    3.资产系统

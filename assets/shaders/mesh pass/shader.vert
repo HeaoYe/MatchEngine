@@ -5,19 +5,20 @@ layout (location = 1) in vec3 normal;
 layout (location = 2) in vec2 uv;
 layout (location = 3) in vec3 color;
 
-layout (location = 4) in vec3 instance_location;
-layout (location = 5) in vec3 instance_rotation;
-layout (location = 6) in vec3 instance_scale;
+layout (location = 4) in vec4 instance_location;
+layout (location = 5) in vec4 instance_rotation;
+layout (location = 6) in vec4 instance_scale;
 
-layout (location = 0) out vec3 frag_normal;
-layout (location = 1) out vec3 frag_color;
-layout (location = 2) out vec2 frag_uv;
+layout (location = 0) out vec3 frag_pos;
+layout (location = 1) out vec3 frag_normal;
+layout (location = 2) out vec3 frag_color;
+layout (location = 3) out vec2 frag_uv;
 
-layout (set = 1, binding = 0) uniform DrawCallData {
+layout (binding = 0) uniform Camera {
     mat4 view;
     mat4 project;
-    uint render_target_index;
-} data;
+    vec4 planes[6];
+} camera;
 
 void main() {
     float sin_v = sin(instance_rotation.x), cos_v = cos(instance_rotation.x);
@@ -44,9 +45,9 @@ void main() {
         0, 0, instance_scale.z
     );
     mat3 model = scale * rotate_z * rotate_y * rotate_x;
-    gl_Position = data.project * data.view * vec4(instance_location + model * pos, 1);
-    // out_normal = transpose(inverse(model)) * normal;
-    frag_normal = normal;
+    frag_pos = instance_location.xyz + model * pos;
+    gl_Position = camera.project * camera.view * vec4(frag_pos, 1);
+    frag_normal = transpose(inverse(model)) * normal;
     frag_color = color;
     frag_uv = uv;
 }

@@ -10,6 +10,7 @@
 #include <MatchEngine/function/game_framework/component_type_uuid_system.hpp>
 #include <MatchEngine/function/game_framework/scene_manager.hpp>
 #include <MatchEngine/function/render/render_system.hpp>
+#include <MatchEngine/function/asset/asset_system.hpp>
 
 namespace MatchEngine {
     // 管理全部运行时系统
@@ -23,5 +24,6 @@ namespace MatchEngine {
         Singleton<ComponentTypeUUIDSystem> component_type_uuid_system;
         Singleton<SceneManager> scene_manager;
         Singleton<RenderSystem> render_system;
+        Singleton<AssetSystem> assets_system;
     };
 }

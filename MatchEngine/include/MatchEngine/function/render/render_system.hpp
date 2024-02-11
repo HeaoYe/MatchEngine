@@ -13,6 +13,7 @@ namespace MatchEngine {
         void postActiveSceneStart();
         void render();
         void destoryActiveSceneRenderer();
+        void waitRenderDevice();
 
         PointerWrapper<SceneRenderer> getActiveSceneRenderer() { return active_renderer; }
         PointerWrapper<Match::ResourceFactory> getMatchFactory() { return factory.get(); }

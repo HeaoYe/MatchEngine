@@ -3,10 +3,6 @@
 #include <MatchEngine/core/base/runtime_system.hpp>
 #include <MatchEngine/game_framework/scene.hpp>
 
-
-#include <MatchEngine/function/render/mesh/mesh.hpp>
-
-
 namespace MatchEngine {
     // 场景管理器, 管理多个场景
     class SceneManager final : public RuntimeSystem {
@@ -15,9 +11,6 @@ namespace MatchEngine {
         bool hasRegisteredScene(const std::string &name);
         PointerWrapper<Game::Scene> createScene(const std::string &name);
         void loadScene(const std::string &name);
-
-        // Test Function
-        MeshID loadMesh(const std::string &filename);
 
         void start();
         void fixedTick();

@@ -4,18 +4,19 @@
 #include <Match/vulkan/renderer.hpp>
 
 namespace MatchEngine {
-    // 不同精度的RenderTarget
+    // TODO: 暂时弃用, 不支持多RenderTarget
     enum class RenderTargetFormat {
         eRGBA8float,
         eRGBA32float,
     };
 
-    // 渲染目标, 一般一个相机会有一个渲染目标, 存储相机视角下的图像
+    // TODO: 暂时弃用, 不支持多RenderTarget
     class RenderTarget {
         NoCopyMoveConstruction(RenderTarget)
         friend class RenderTargetPool;
     public:
         RenderTarget(RenderTargetFormat format, uint32_t width, uint32_t height);
+        void setClearValue(float r, float b, float g, float a);
         ~RenderTarget();
     private:
         std::shared_ptr<Match::StorageImage> image;

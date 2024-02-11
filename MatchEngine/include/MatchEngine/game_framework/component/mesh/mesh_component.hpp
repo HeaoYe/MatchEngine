@@ -1,7 +1,7 @@
 #pragma once
 
 #include <MatchEngine/game_framework/component/component.hpp>
-#include <MatchEngine/function/render/mesh/mesh.hpp>
+#include <MatchEngine/function/asset/mesh/mesh_id.hpp>
 
 namespace MatchEngine::Game {
     // Mesh组件
