@@ -1,6 +1,6 @@
 #pragma once
 
-#include <MatchEngine/core/base/macro.hpp>
+#include <MatchEngine/core/base/singleton.hpp>
 #include <string>
 
 namespace MatchEngine {
@@ -24,4 +24,14 @@ namespace MatchEngine {
     protected:
         State state { RuntimeSystem::State::eUninitialized };
     };
+
+    #define DECLARE_RUNTIME_SYSTEM(cls_name, ...) \
+        NoCopyMoveConstruction(cls_name) \
+        friend Singleton<cls_name>; \
+    private: \
+        cls_name(__VA_ARGS__); \
+        ~cls_name() override; \
+    public: \
+        std::string getSystemName() const override { return #cls_name; } \
+    private:
 }

@@ -18,7 +18,10 @@ namespace MatchEngine {
     }
 
     void InputSystem::swapState() {
+        memcpy(&input_states[!current_state_index], &input_states[current_state_index], sizeof(InputState));
         current_state_index = !current_state_index;
+        input_states[current_state_index].mouse_delta = { 0, 0 };
+        input_states[current_state_index].mouse_scroll = { 0, 0 };
     }
 
     InputSystem::InputState *InputSystem::currentState() {

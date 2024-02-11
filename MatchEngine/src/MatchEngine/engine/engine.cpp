@@ -1,5 +1,5 @@
 #include <MatchEngine/engine/engine.hpp>
-#include <MatchEngine/function/user_interface.hpp>
+#include <MatchEngine/function/user_interface/user_interface.hpp>
 #include "internal.hpp"
 #include <iostream>
 
@@ -15,10 +15,19 @@ namespace MatchEngine {
         }
         global_runtime_context = new RuntimeContext();
 
+        // 加载反射系统
+        global_runtime_context->reflect_system.initialize();
+        UserInterface::reflect.ptr = global_runtime_context->reflect_system.getInstance();
+        if (!checkRuntimeSystem(UserInterface::reflect.ptr)) {
+            std::cout << "Failed initialize " << global_runtime_context->reflect_system->getSystemName() << "." << std::endl;
+            return false;
+        }
+        global_runtime_context->reflect_system->registerReflectProperties();
+
         // 初始化日志系统
         global_runtime_context->logger_system.initialize(Logger::Level::eInfo);
-        logger_system.ptr = global_runtime_context->logger_system.getInstance();
-        if (!checkRuntimeSystem(logger_system.ptr)) {
+        UserInterface::logger_system.ptr = global_runtime_context->logger_system.getInstance();
+        if (!checkRuntimeSystem(UserInterface::logger_system.ptr)) {
             std::cout << "Failed initialize " << global_runtime_context->logger_system->getSystemName() << "." << std::endl;
             return false;
         }
@@ -31,15 +40,45 @@ namespace MatchEngine {
 
         // 初始化输入系统
         global_runtime_context->input_system.initialize();
-        input.ptr = global_runtime_context->input_system.getInstance();
-        if (!checkRuntimeSystem(input.ptr)) {
+        UserInterface::input.ptr = global_runtime_context->input_system.getInstance();
+        if (!checkRuntimeSystem(UserInterface::input.ptr)) {
             return false;
         }
 
         // 初始化事件系统
         global_runtime_context->event_system.initialize();
-        event_system.ptr = global_runtime_context->event_system.getInstance();
-        if (!checkRuntimeSystem(event_system.ptr)) {
+        UserInterface::event_system.ptr = global_runtime_context->event_system.getInstance();
+        if (!checkRuntimeSystem(UserInterface::event_system.ptr)) {
+            return false;
+        }
+
+        // 初始化ComponentTypeUUID管理系统
+        global_runtime_context->component_type_uuid_system.initialize();
+        if (!checkRuntimeSystem(global_runtime_context->component_type_uuid_system.getInstance())) {
+            return false;
+        }
+
+        // 初始化GameObjectUUID分配器
+        global_runtime_context->game_object_uuid_allocator.initialize();
+        if (!checkRuntimeSystem(global_runtime_context->game_object_uuid_allocator.getInstance())) {
+            return false;
+        }
+
+        // 初始化场景管理器
+        global_runtime_context->scene_manager.initialize();
+        UserInterface::scene_manager.ptr = global_runtime_context->scene_manager.getInstance();
+        if (!checkRuntimeSystem(UserInterface::scene_manager.ptr)) {
+            return false;
+        }
+
+        global_runtime_context->render_system.initialize();
+        if (!checkRuntimeSystem(global_runtime_context->render_system.getInstance())) {
+            return false;
+        }
+
+        global_runtime_context->assets_system.initialize();
+        UserInterface::assets_system.ptr = global_runtime_context->assets_system.getInstance();
+        if (!checkRuntimeSystem(UserInterface::assets_system.ptr)) {
             return false;
         }
 
@@ -47,36 +86,76 @@ namespace MatchEngine {
     }
 
     void MatchEngine::destroy() {
+        global_runtime_context->render_system->waitRenderDevice();
+
+        UserInterface::assets_system.ptr = nullptr;
+        global_runtime_context->assets_system.destory();
+
+        global_runtime_context->render_system.destory();
+
+        // 销毁场景管理器
+        UserInterface::scene_manager.ptr = nullptr;
+        global_runtime_context->scene_manager.destory();
+
+        // 销毁GameObjectUUID分配器
+        global_runtime_context->game_object_uuid_allocator.destory();
+
+        // 销毁ComponentTypeUUID管理系统
+        global_runtime_context->component_type_uuid_system.destory();
+
         // 销毁事件系统
+        UserInterface::event_system.ptr = nullptr;
         global_runtime_context->event_system.destory();
 
         // 销毁输入系统
+        UserInterface::input.ptr = nullptr;
         global_runtime_context->input_system.destory();
 
         // 销毁窗口系统
         global_runtime_context->window_system.destory();
 
         // 销毁日志系统
+        UserInterface::logger_system.ptr = nullptr;
         global_runtime_context->logger_system.destory();
         client_logger = nullptr;
         core_logger = nullptr;
+        
+        // 销毁反射系统
+        UserInterface::reflect.ptr = nullptr;
+        global_runtime_context->reflect_system.destory();
         
         delete global_runtime_context;
         global_runtime_context = nullptr;
     }
     
     void MatchEngine::run() {
+        global_runtime_context->scene_manager->start();
+        std::thread fixed_tick_thread([&]() {
+            while (global_runtime_context->window_system->isAlive()) {
+                global_runtime_context->scene_manager->fixedTick();
+            }
+        });
+
         while (global_runtime_context->window_system->isAlive()) {
             global_runtime_context->window_system->pollEvents();
+
+            global_runtime_context->scene_manager->tick(0.03);
+
             global_runtime_context->input_system->swapState();
+
+            global_runtime_context->render_system->render();
+            
+            global_runtime_context->scene_manager->swap();
         }
+
+        fixed_tick_thread.join();
     }
 
     bool MatchEngine::checkRuntimeSystem(const RuntimeSystem *system) {
         if (global_runtime_context == nullptr) {
             return false;
         }
-        if (global_runtime_context->logger_system->getState() != RuntimeSystem::State::eInitialized) {
+        if ((UserInterface::logger_system.ptr != nullptr) && (global_runtime_context->logger_system->getState() != RuntimeSystem::State::eInitialized)) {
             return false;
         }
         switch (system->getState()) {

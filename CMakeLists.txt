@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.27)
 
 if (PROJECT_BINARY_DIR STREQUAL PROJECT_SOURCE_DIR)
-    message("WARN: PROJECT_BINARY_DIR == PROJECT_SOURCE_DIR")
+    message(FATAL_ERROR "ERROR: PROJECT_BINARY_DIR == PROJECT_SOURCE_DIR")
 endif()
 
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -37,6 +37,9 @@ project(MatchEngine-Demo)
 
 option(MATCH_BUILD_EXAMPLES "Build Match Examples" OFF)
 add_subdirectory(thirdparty/Match)
+
+set(MatchEngineParserPath ${CMAKE_CURRENT_SOURCE_DIR}/MatchEngineParser)
+add_subdirectory(MatchEngineParser)
 
 add_subdirectory(MatchEngine)
 add_subdirectory(Sandbox)
