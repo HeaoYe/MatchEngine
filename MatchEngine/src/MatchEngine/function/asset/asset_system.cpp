@@ -30,7 +30,6 @@ namespace std {
     };
 }
 
-
 namespace MatchEngine {
     AssetSystem::AssetSystem() {
         initializeRuntimeSystem();
@@ -124,6 +123,9 @@ namespace MatchEngine {
                         attrib.colors[3 * index.vertex_index + 2],
                     };
                 }
+                // 根据Lod层级计算颜色
+                float c = pow((float)(data.lods.size() - 1) / max_level_of_details, 0.8);
+                vertex.color = { c, 0.7 - std::abs(0.5 - c), 1 - c };
 
                 if (unique_vertices.count(vertex) == 0) {
                     unique_vertices.insert(std::make_pair(vertex, primitive.positions.size()));

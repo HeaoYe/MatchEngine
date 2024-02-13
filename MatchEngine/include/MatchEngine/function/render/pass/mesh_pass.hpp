@@ -9,7 +9,7 @@ namespace MatchEngine {
         NoCopyMoveConstruction(MeshPass)
     public:
         MeshPass();
-        ~MeshPass();
+        ~MeshPass() override;
 
         void createAttachent(Match::RenderPassBuilder &builder) override;
         void buildPassDescriptor(Match::SubpassBuilder &builder) override;
@@ -27,7 +27,9 @@ namespace MatchEngine {
         std::shared_ptr<Match::InFlightBuffer> instance_scales_buffer;
 
         std::vector<vk::CommandBuffer> command_buffers;
+    MATCHEDITOR_VISIBLE:
         std::vector<uint32_t *> counts_ptrs;
+    private:
         std::vector<vk::Fence> compute_fences;
 
         std::shared_ptr<Match::DescriptorSet> compute_shader_program_descriptor_set;

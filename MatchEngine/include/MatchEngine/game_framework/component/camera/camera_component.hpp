@@ -1,7 +1,6 @@
 #pragma once
 
 #include <MatchEngine/game_framework/component/component.hpp>
-#include <MatchEngine/function/render/render_target/render_target.hpp>
 #include <glm/mat4x4.hpp>
 
 namespace MatchEngine::Game {

@@ -21,7 +21,7 @@ namespace MatchEngine::Game {
         void removeGameObject(GameObjectUUID uuid);
 
         std::string getSceneName() { return name; }
-    private:
+    MATCHEDITOR_VISIBLE:
         std::string name;
         std::map<uint64_t, GameObject *> game_object_map;
         std::list<GameObject *> game_objects;

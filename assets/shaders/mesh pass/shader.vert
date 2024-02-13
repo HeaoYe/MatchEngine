@@ -47,7 +47,7 @@ void main() {
     mat3 model = scale * rotate_z * rotate_y * rotate_x;
     frag_pos = instance_location.xyz + model * pos;
     gl_Position = camera.project * camera.view * vec4(frag_pos, 1);
-    frag_normal = transpose(inverse(model)) * normal;
+    frag_normal = normalize(transpose(inverse(model)) * normal);
     frag_color = color;
     frag_uv = uv;
 }

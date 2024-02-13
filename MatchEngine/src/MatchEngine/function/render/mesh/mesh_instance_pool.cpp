@@ -10,9 +10,14 @@ namespace MatchEngine {
         mesh_instance_buffer.reset();
     }
 
-    void MeshInstancePool::createMeshInstance(const MeshInstance &mesh_instance) {
+    uint32_t MeshInstancePool::createMeshInstance(const MeshInstance &mesh_instance) {
         *mesh_instance_buffer_ptr = mesh_instance;
         mesh_instance_buffer_ptr ++;
         current_instance_count ++;
+        return current_instance_count - 1;
+    }
+
+    MeshInstance *MeshInstancePool::getMeshInstancePtr(uint32_t mesh_instance_index) {
+        return static_cast<MeshInstance *>(mesh_instance_buffer->map()) + mesh_instance_index;
     }
 }

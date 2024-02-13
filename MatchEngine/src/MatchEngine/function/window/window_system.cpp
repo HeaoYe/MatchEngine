@@ -12,6 +12,7 @@ namespace MatchEngine {
         Match::set_log_level(Match::LogLevel::eError);
         api_manager = &Match::Initialize();
         Match::set_log_level(Match::LogLevel::eInfo);
+        Match::runtime_setting->set_vsync(false);
 
         state = RuntimeSystem::State::eInitialized;
     }

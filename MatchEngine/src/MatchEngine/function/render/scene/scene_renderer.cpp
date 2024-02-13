@@ -6,6 +6,9 @@ namespace MatchEngine {
     SceneRenderer::SceneRenderer() {
         auto factory = global_runtime_context->render_system->getMatchFactory();
         auto render_pass_builder = factory->create_render_pass_builder();
+        if (render_pass_builder->attachments_map.find(global_runtime_context->render_system->getOutputAttachmentName()) == render_pass_builder->attachments_map.end()) {
+            render_pass_builder->add_attachment(global_runtime_context->render_system->getOutputAttachmentName(), Match::AttachmentType::eFloat4Buffer);
+        }
 
         // GPU Driven Pipeline 渲染Mesh的Subpass
         subpasses.push_back(std::make_unique<MeshPass>());
@@ -20,6 +23,8 @@ namespace MatchEngine {
         renderer = factory->create_renderer(render_pass_builder);
 
         swap_data = std::make_unique<SceneSwapData>();
+
+        pre_scene_renderer_start = [](std::shared_ptr<Match::Renderer> renderer) {};
     }
 
     SceneRenderer::~SceneRenderer() {
@@ -30,6 +35,8 @@ namespace MatchEngine {
     }
     
     void SceneRenderer::start() {
+        pre_scene_renderer_start(renderer);
+
         for (auto &pass : subpasses) {
             pass->start(renderer);
         }

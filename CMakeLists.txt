@@ -42,4 +42,5 @@ set(MatchEngineParserPath ${CMAKE_CURRENT_SOURCE_DIR}/MatchEngineParser)
 add_subdirectory(MatchEngineParser)
 
 add_subdirectory(MatchEngine)
+add_subdirectory(MatchEditor)
 add_subdirectory(Sandbox)

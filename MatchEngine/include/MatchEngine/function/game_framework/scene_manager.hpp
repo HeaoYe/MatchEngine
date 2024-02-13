@@ -20,7 +20,7 @@ namespace MatchEngine {
         std::string getActiveSceneName() const  { return active_scene->getSceneName(); }
     private:
         void setActiveScene(Game::Scene *scene);
-    private:
+    MATCHEDITOR_VISIBLE:
         std::map<std::string, Game::Scene *> scenes;
         Game::Scene *active_scene { nullptr };
         Game::Scene *change_scene { nullptr };

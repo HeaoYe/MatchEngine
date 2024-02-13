@@ -1,5 +1,4 @@
 #include <MatchEngine/function/render/pass/mesh_pass.hpp>
-#include <Match/constant.hpp>
 #include "internal.hpp"
 
 namespace MatchEngine {
@@ -17,7 +16,7 @@ namespace MatchEngine {
 
     void MeshPass::buildPassDescriptor(Match::SubpassBuilder &builder) {
         builder.attach_depth_attachment("depth")
-            .attach_output_attachment(Match::SWAPCHAIN_IMAGE_ATTACHMENT)
+            .attach_output_attachment(global_runtime_context->render_system->getOutputAttachmentName())
             .wait_for(
                 Match::EXTERNAL_SUBPASS,
                 {
@@ -50,8 +49,10 @@ namespace MatchEngine {
         command_buffers = global_runtime_context->window_system->getAPIManager()->command_pool->allocate_command_buffer(Match::setting.max_in_flight_frame);
         for (auto &buffer : counts_buffer->in_flight_buffers) {
             counts_ptrs.push_back(static_cast<uint32_t *>(buffer->map()));
+            counts_ptrs.back()[0] = 0;
             counts_ptrs.back()[1] = 1;
             counts_ptrs.back()[2] = 1;
+            counts_ptrs.back()[3] = 0;
             compute_fences.push_back(global_runtime_context->window_system->getAPIManager()->device->device.createFence(fci));
         }
 

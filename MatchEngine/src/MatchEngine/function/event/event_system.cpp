@@ -95,11 +95,9 @@ namespace MatchEngine {
             }
             switch (action) {
             case GLFW_PRESS:
-                global_runtime_context->input_system->currentState()->key_states[static_cast<size_t>(key)] = InputSystem::ButtonState::ePressed;
                 global_runtime_context->event_system->dispatch<KeyPressedEvent>({ .key = key });
                 break;
             case GLFW_RELEASE:
-                global_runtime_context->input_system->currentState()->key_states[static_cast<size_t>(key)] = InputSystem::ButtonState::eReleased;
                 global_runtime_context->event_system->dispatch<KeyReleasedEvent>({ .key = key });
                 break;
             default:
@@ -117,11 +115,9 @@ namespace MatchEngine {
                 return;
             switch (action) {
             case GLFW_PRESS:
-                global_runtime_context->input_system->currentState()->mouse_button_states[static_cast<size_t>(btn)] = InputSystem::ButtonState::ePressed;
                 global_runtime_context->event_system->dispatch<MousePressedEvent>({ .button = btn });
                 break;
             case GLFW_RELEASE:
-                global_runtime_context->input_system->currentState()->mouse_button_states[static_cast<size_t>(btn)] = InputSystem::ButtonState::eReleased;
                 global_runtime_context->event_system->dispatch<MouseReleasedEvent>({ .button = btn });
                 break;
             default:
@@ -130,13 +126,10 @@ namespace MatchEngine {
         });
 
         glfwSetCursorPosCallback(static_cast<GLFWwindow *>(native_pointer), [](GLFWwindow *, double xpos, double ypos) {
-            global_runtime_context->input_system->currentState()->mouse_pos = { xpos, ypos };
-            global_runtime_context->input_system->currentState()->mouse_delta = global_runtime_context->input_system->currentState()->mouse_pos - global_runtime_context->input_system->lastState()->mouse_pos;
             global_runtime_context->event_system->dispatch<MouseMovedEvent>({ .x = xpos, .y = ypos });
         });
 
         glfwSetScrollCallback(static_cast<GLFWwindow *>(native_pointer), [](GLFWwindow *, double xoffset, double yoffset) {
-            global_runtime_context->input_system->currentState()->mouse_scroll = { xoffset, yoffset };
             global_runtime_context->event_system->dispatch<MouseScrollEvent>({ .delta_x = xoffset, .delta_y = yoffset });
         });
     }
