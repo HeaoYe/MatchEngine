@@ -9,6 +9,7 @@ namespace MatchEngine {
         Match::setting.engine_name = "Match Engine";
         Match::setting.window_size = { 1920, 1080 };
         Match::setting.debug_mode = true;
+        // Match::setting.max_in_flight_frame = 1;
         Match::set_log_level(Match::LogLevel::eError);
         api_manager = &Match::Initialize();
         Match::set_log_level(Match::LogLevel::eInfo);

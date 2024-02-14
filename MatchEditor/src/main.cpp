@@ -18,13 +18,13 @@ int main() {
     // 添加相机
     auto camera = scene->createGameObject("相机");
     camera->addComponet(new MatchEngine::Game::TransformComponent());
-    camera->addComponet(new MatchEngine::Game::PerspectiveCameraComponent(60, 1920 / 1080.0f, 0.1, 100));
+    camera->addComponet(new MatchEngine::Game::PerspectiveCameraComponent(60, 1920 / 1080.0f, 0.1, 1000));
     camera->addComponet(new MatchEngine::Game::CameraControllerComponent());
 
     // 加载龙
     assets_system->setRootDir("Sandbox/resource");
     auto dragon_mesh_id = assets_system->loadMesh("dragon_lods.obj");
-    int n = 12, n2 = n / 2;
+    int n = 8, n2 = n / 2;
     for (int i = 0; i < n * n * n; i ++) {
         auto dragon = scene->createGameObject("龙_" + std::to_string(i));
         auto t = new MatchEngine::Game::TransformComponent();

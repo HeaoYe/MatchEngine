@@ -36,7 +36,7 @@ namespace MatchEngine {
         auto mesh_instance_count = global_runtime_context->render_system->getActiveSceneRenderer()->getSwapData()->getMeshInstancePool()->getMeshInstanceCount();
         mesh_instance_count += 256;
 
-        counts_buffer = std::make_shared<Match::InFlightBuffer>(sizeof(uint32_t) * 4, vk::BufferUsageFlagBits::eIndirectBuffer | vk::BufferUsageFlagBits::eStorageBuffer, VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
+        counts_buffer = std::make_shared<Match::InFlightBuffer>(sizeof(uint32_t) * 5, vk::BufferUsageFlagBits::eIndirectBuffer | vk::BufferUsageFlagBits::eStorageBuffer, VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
         primitive_counts_buffer = std::make_shared<Match::InFlightBuffer>(sizeof(uint32_t) * max_primitive_count, vk::BufferUsageFlagBits::eStorageBuffer, VMA_MEMORY_USAGE_GPU_ONLY, VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT);
         visible_mesh_instance_indices_buffer = std::make_shared<Match::InFlightBuffer>(sizeof(uint32_t) * 2 * mesh_instance_count, vk::BufferUsageFlagBits::eStorageBuffer, VMA_MEMORY_USAGE_GPU_ONLY, VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT);
         indirect_commands_buffer = std::make_shared<Match::InFlightBuffer>(sizeof(vk::DrawIndexedIndirectCommand) * max_primitive_count, vk::BufferUsageFlagBits::eStorageBuffer, VMA_MEMORY_USAGE_GPU_ONLY, VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT);
@@ -45,22 +45,27 @@ namespace MatchEngine {
         instance_rotations_buffer = std::make_shared<Match::InFlightBuffer>(sizeof(glm::vec4) * mesh_instance_count, vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eStorageBuffer, VMA_MEMORY_USAGE_GPU_ONLY, VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT);
         instance_scales_buffer = std::make_shared<Match::InFlightBuffer>(sizeof(glm::vec4) * mesh_instance_count, vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eStorageBuffer, VMA_MEMORY_USAGE_GPU_ONLY, VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT);
 
+        visibility_buffer = std::make_shared<Match::InFlightBuffer>(sizeof(uint64_t) * 1920 * 1080, vk::BufferUsageFlagBits::eStorageBuffer, VMA_MEMORY_USAGE_GPU_ONLY, VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT);
+
         vk::FenceCreateInfo fci {};
         command_buffers = global_runtime_context->window_system->getAPIManager()->command_pool->allocate_command_buffer(Match::setting.max_in_flight_frame);
         for (auto &buffer : counts_buffer->in_flight_buffers) {
             counts_ptrs.push_back(static_cast<uint32_t *>(buffer->map()));
-            counts_ptrs.back()[0] = 0;
+            counts_ptrs.back()[0] = 1;
             counts_ptrs.back()[1] = 1;
             counts_ptrs.back()[2] = 1;
             counts_ptrs.back()[3] = 0;
+            counts_ptrs.back()[4] = 0;
             compute_fences.push_back(global_runtime_context->window_system->getAPIManager()->device->device.createFence(fci));
         }
 
         mesh_shader_program_descriptor_set = factory->create_descriptor_set();
         mesh_shader_program_descriptor_set->add_descriptors({
-            { Match::ShaderStage::eVertex | Match::ShaderStage::eCompute, 0, Match::DescriptorType::eUniform }
+            { Match::ShaderStage::eVertex | Match::ShaderStage::eCompute, 0, Match::DescriptorType::eUniform },
+            { Match::ShaderStage::eFragment, 1, Match::DescriptorType::eStorageBuffer }
         }).allocate()
-            .bind_uniform(0, global_runtime_context->render_system->getActiveSceneRenderer()->getSwapData()->getCameraUniformBuffer());
+            .bind_uniform(0, global_runtime_context->render_system->getActiveSceneRenderer()->getSwapData()->getCameraUniformBuffer())
+            .bind_storage_buffer(1, visibility_buffer);
 
         compute_shader_program_descriptor_set = factory->create_descriptor_set();
         compute_shader_program_descriptor_set->add_descriptors({
@@ -129,6 +134,7 @@ namespace MatchEngine {
         collect_available_indirect_command_shader_program->push_constants.reset();
 
         auto vert_shader = factory->compile_shader("mesh pass/shader.vert", Match::ShaderStage::eVertex);
+        auto frag_pre_z_shader = factory->compile_shader("mesh pass/shader_pre_z.frag", Match::ShaderStage::eFragment);
         auto frag_shader = factory->compile_shader("mesh pass/shader.frag", Match::ShaderStage::eFragment);
         auto vas = factory->create_vertex_attribute_set({
             { 0, Match::InputRate::ePerVertex, { Match::VertexType::eFloat3 } },
@@ -139,6 +145,16 @@ namespace MatchEngine {
             { 5, Match::InputRate::ePerInstance, { Match::VertexType::eFloat4 } },
             { 6, Match::InputRate::ePerInstance, { Match::VertexType::eFloat4 } },
         });
+        mesh_pre_z_shader_program = factory->create_shader_program(renderer, name);
+        mesh_pre_z_shader_program->attach_vertex_shader(vert_shader)
+            .attach_fragment_shader(frag_pre_z_shader)
+            .attach_vertex_attribute_set(vas)
+            .attach_descriptor_set(mesh_shader_program_descriptor_set)
+            .compile({
+                .cull_mode = Match::CullMode::eBack,
+                .front_face = Match::FrontFace::eCounterClockwise,
+                .depth_test_enable = VK_TRUE,
+            });
         mesh_shader_program = factory->create_shader_program(renderer, name);
         mesh_shader_program->attach_vertex_shader(vert_shader)
             .attach_fragment_shader(frag_shader)
@@ -148,6 +164,8 @@ namespace MatchEngine {
                 .cull_mode = Match::CullMode::eBack,
                 .front_face = Match::FrontFace::eCounterClockwise,
                 .depth_test_enable = VK_TRUE,
+                .depth_write_enable = VK_FALSE,
+                .depth_compere_op = vk::CompareOp::eEqual,
             });
     }
 
@@ -163,8 +181,9 @@ namespace MatchEngine {
         command_buffer.reset();
         vk::CommandBufferBeginInfo begin_info {};
         command_buffer.begin(begin_info);
-        counts_ptrs[renderer->current_in_flight][0] = 0;
+        counts_ptrs[renderer->current_in_flight][0] = 1;
         counts_ptrs[renderer->current_in_flight][3] = 0;
+        counts_ptrs[renderer->current_in_flight][4] = 0;
 
         renderer->bind_shader_program(collect_mesh_instance_shader_program);
         renderer->dispatch(std::ceil(mesh_instance_count / 64.0f));
@@ -255,7 +274,15 @@ namespace MatchEngine {
         }, { 0, 0, 0, 0, 0, 0, 0 });
         renderer->bind_index_buffer(global_runtime_context->assets_system->getMeshPool()->index_buffer);
 
+        renderer->bind_shader_program(mesh_pre_z_shader_program);
+        for (size_t i = 0; i < counts_ptrs[renderer->current_in_flight][4]; i ++) {
+            command_buffer.drawIndexedIndirect(available_indirect_commands_buffer->get_buffer(renderer->current_in_flight), sizeof(vk::DrawIndexedIndirectCommand) * i, 1, sizeof(vk::DrawIndexedIndirectCommand));
+        }
+
         renderer->bind_shader_program(mesh_shader_program);
-        command_buffer.drawIndexedIndirect(available_indirect_commands_buffer->get_buffer(renderer->current_in_flight), 0, counts_ptrs[renderer->current_in_flight][3], sizeof(vk::DrawIndexedIndirectCommand));
+        for (size_t i = 0; i < counts_ptrs[renderer->current_in_flight][4]; i ++) {
+            command_buffer.drawIndexedIndirect(available_indirect_commands_buffer->get_buffer(renderer->current_in_flight), sizeof(vk::DrawIndexedIndirectCommand) * i, 1, sizeof(vk::DrawIndexedIndirectCommand));
+        }
+        // command_buffer.drawIndexedIndirect(available_indirect_commands_buffer->get_buffer(renderer->current_in_flight), 0, counts_ptrs[renderer->current_in_flight][4], sizeof(vk::DrawIndexedIndirectCommand));
     }
 }

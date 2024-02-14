@@ -5,9 +5,10 @@
 #include "types.glsl"
 
 layout (std430, binding = 0) writeonly buffer CountsBuffer {
-    uint visible_mesh_instance_count;
+    uint visible_mesh_instance_count_div_64;
     uint y;
     uint z;
+    uint visible_mesh_instance_count;
     uint available_indirect_command_count;
 };
 
@@ -45,6 +46,7 @@ void main() {
 
         // 视锥剔除
         vec4 location = camera.view * vec4(mesh_instance.location, 1);
+        location.xyz /= location.w;
         float radius = mesh_descriptors[mesh_id].radius * max(max(mesh_instance.scale.x, mesh_instance.scale.y), mesh_instance.scale.z);
         for (int i = 0; i < 6; i ++) {
             if ((camera.planes[i].x * location.x + camera.planes[i].y * location.y + camera.planes[i].z * location.z + camera.planes[i].w) <= -radius) {
@@ -72,6 +74,9 @@ void main() {
 
         // 写入缓存
         uint new_mesh_instance_index = atomicAdd(visible_mesh_instance_count, 1);
+        if (new_mesh_instance_index % 64 == 0) {
+            atomicAdd(visible_mesh_instance_count_div_64, 1);
+        }
         visible_mesh_instance_indices[new_mesh_instance_index] = uvec2(mesh_instance_index, lod_index);
         atomicAdd(primitive_counts[mesh_descriptors[mesh_id].lods[lod_index]], 1);
     }

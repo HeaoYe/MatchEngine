@@ -3,7 +3,7 @@
 
 namespace MatchEngine {
     SceneSwapData::SceneSwapData() {
-        mesh_instance_pool = std::make_unique<MeshInstancePool>(4096);
+        mesh_instance_pool = std::make_unique<MeshInstancePool>(16384);
         camera_uniform_buffer = global_runtime_context->render_system->getMatchFactory()->create_uniform_buffer(sizeof(glm::mat4) * 2 + sizeof(glm::vec4) * 6);
     }
 

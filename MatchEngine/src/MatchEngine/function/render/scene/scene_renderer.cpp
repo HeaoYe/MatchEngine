@@ -7,7 +7,7 @@ namespace MatchEngine {
         auto factory = global_runtime_context->render_system->getMatchFactory();
         auto render_pass_builder = factory->create_render_pass_builder();
         if (render_pass_builder->attachments_map.find(global_runtime_context->render_system->getOutputAttachmentName()) == render_pass_builder->attachments_map.end()) {
-            render_pass_builder->add_attachment(global_runtime_context->render_system->getOutputAttachmentName(), Match::AttachmentType::eFloat4Buffer);
+            render_pass_builder->add_attachment(global_runtime_context->render_system->getOutputAttachmentName(), Match::AttachmentType::eColorBuffer);
         }
 
         // GPU Driven Pipeline 渲染Mesh的Subpass

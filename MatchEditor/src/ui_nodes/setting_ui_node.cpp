@@ -7,7 +7,7 @@ namespace MatchEditor {
 
         ImGui::Text("FPS: %f", ImGui::GetIO().Framerate);
         auto mesh_pass = static_cast<MatchEngine::MeshPass *>(MatchEngine::global_runtime_context->render_system->getActiveSceneRenderer()->subpasses.front().get());
-        ImGui::Text("Visibility: %d", mesh_pass->counts_ptrs[Match::runtime_setting->current_in_flight][0]);
+        ImGui::Text("Visibility: %d", mesh_pass->counts_ptrs[Match::runtime_setting->current_in_flight][3]);
         
         ImGui::End();
     }

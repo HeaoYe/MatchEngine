@@ -26,6 +26,8 @@ namespace MatchEngine {
         std::shared_ptr<Match::InFlightBuffer> instance_rotations_buffer;
         std::shared_ptr<Match::InFlightBuffer> instance_scales_buffer;
 
+        std::shared_ptr<Match::InFlightBuffer> visibility_buffer;
+
         std::vector<vk::CommandBuffer> command_buffers;
     MATCHEDITOR_VISIBLE:
         std::vector<uint32_t *> counts_ptrs;
@@ -40,6 +42,7 @@ namespace MatchEngine {
         std::shared_ptr<Match::ComputeShaderProgram> collect_available_indirect_command_shader_program;
 
         std::shared_ptr<Match::DescriptorSet> mesh_shader_program_descriptor_set;
+        std::shared_ptr<Match::GraphicsShaderProgram> mesh_pre_z_shader_program;
         std::shared_ptr<Match::GraphicsShaderProgram> mesh_shader_program;
     };
 }

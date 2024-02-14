@@ -5,9 +5,10 @@
 #include "types.glsl"
 
 layout (std430, binding = 0) writeonly buffer CountsBuffer {
-    uint visible_mesh_instance_count;
+    uint visible_mesh_instance_count_div_64;
     uint y;
     uint z;
+    uint visible_mesh_instance_count;
     uint available_indirect_command_count;
 };
 
