@@ -3,6 +3,7 @@
 #include <MatchEngine/game_framework/rtti.hpp>
 #include <MatchEngine/core/reflect/reflect_macro.hpp>
 #include <MatchEngine/game_framework/uuid_type.hpp>
+#include <MatchEngine/game_framework/types.hpp>
 
 namespace MatchEngine::Game {
     // 组件基类, 所有组件继承自这个类
@@ -27,10 +28,15 @@ namespace MatchEngine::Game {
         // GameObject销毁时会调用它的所有Component的onDestroy
         virtual void onDestroy() {};
     public:
+        uint32_t registerMemberUpdateCallback(std::function<void(Component *)> callback) { member_update_callbacks.insert(std::make_pair(current_member_update_callback_id, callback)); current_member_update_callback_id += 1; return current_member_update_callback_id - 1; }
+        void removeMemberUpdataCallback(uint32_t callback_id) { member_update_callbacks.erase(callback_id); }
+        void onMemberUpdate() { for (auto &[id, callback] : member_update_callbacks) { callback(this); } };
         ComponentTypeUUID getTypeUUID() const { return uuid; }
     protected:
         class GameObject *master;  // set by game_object
         ComponentTypeUUID uuid;    // set by game_object
+        uint32_t current_member_update_callback_id { 0 };
+        std::map<uint32_t, std::function<void(Component *)>> member_update_callbacks;
     };
 
     #define DECLARE_COMPONENT_CUSTOM_CONSTRUCTION(class_name) \

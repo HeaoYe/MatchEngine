@@ -38,6 +38,13 @@ namespace MatchEngine {
             return false;
         }
 
+        // 初始化事件系统
+        global_runtime_context->event_system.initialize();
+        UserInterface::event_system.ptr = global_runtime_context->event_system.getInstance();
+        if (!checkRuntimeSystem(UserInterface::event_system.ptr)) {
+            return false;
+        }
+
         // 初始化输入系统
         global_runtime_context->input_system.initialize();
         UserInterface::input.ptr = global_runtime_context->input_system.getInstance();
@@ -45,10 +52,10 @@ namespace MatchEngine {
             return false;
         }
 
-        // 初始化事件系统
-        global_runtime_context->event_system.initialize();
-        UserInterface::event_system.ptr = global_runtime_context->event_system.getInstance();
-        if (!checkRuntimeSystem(UserInterface::event_system.ptr)) {
+        // 初始化定时器系统
+        global_runtime_context->timer_system.initialize();
+        UserInterface::timer_system.ptr = global_runtime_context->timer_system.getInstance();
+        if (!checkRuntimeSystem(UserInterface::timer_system.ptr)) {
             return false;
         }
 
@@ -71,26 +78,31 @@ namespace MatchEngine {
             return false;
         }
 
+        // 初始化渲染系统
         global_runtime_context->render_system.initialize();
         if (!checkRuntimeSystem(global_runtime_context->render_system.getInstance())) {
             return false;
         }
 
+        // 初始化资产系统
         global_runtime_context->assets_system.initialize();
         UserInterface::assets_system.ptr = global_runtime_context->assets_system.getInstance();
         if (!checkRuntimeSystem(UserInterface::assets_system.ptr)) {
             return false;
         }
 
+        global_runtime_context->render_system->createRenderResource();
         return true;
     }
 
     void MatchEngine::destroy() {
         global_runtime_context->render_system->waitRenderDevice();
 
+        // 销毁资产系统
         UserInterface::assets_system.ptr = nullptr;
         global_runtime_context->assets_system.destory();
 
+        // 销毁渲染系统
         global_runtime_context->render_system.destory();
 
         // 销毁场景管理器
@@ -103,13 +115,17 @@ namespace MatchEngine {
         // 销毁ComponentTypeUUID管理系统
         global_runtime_context->component_type_uuid_system.destory();
 
-        // 销毁事件系统
-        UserInterface::event_system.ptr = nullptr;
-        global_runtime_context->event_system.destory();
+        // 销毁定时器系统
+        UserInterface::timer_system.ptr = nullptr;
+        global_runtime_context->timer_system.destory();
 
         // 销毁输入系统
         UserInterface::input.ptr = nullptr;
         global_runtime_context->input_system.destory();
+
+        // 销毁事件系统
+        UserInterface::event_system.ptr = nullptr;
+        global_runtime_context->event_system.destory();
 
         // 销毁窗口系统
         global_runtime_context->window_system.destory();
@@ -128,24 +144,40 @@ namespace MatchEngine {
         global_runtime_context = nullptr;
     }
     
-    void MatchEngine::run() {
+    void MatchEngine::gameLoop() {
+        global_runtime_context->render_system->getRenderer()->start();
         global_runtime_context->scene_manager->start();
+        auto main_loop_timer = global_runtime_context->timer_system->createTimer();
+
+        // 在一个单独的线程，进行30FPS的固定频率tick
         std::thread fixed_tick_thread([&]() {
+            auto timer = global_runtime_context->timer_system->createTimer();
             while (global_runtime_context->window_system->isAlive()) {
-                global_runtime_context->scene_manager->fixedTick();
+                if ((!timer->is_suspended()) && (!main_loop_timer->is_suspended())) {
+                    global_runtime_context->scene_manager->fixedTick();
+                }
+                timer->tick(std::chrono::milliseconds(static_cast<int>(Game::fixed_tick_delta_time * 1000)));
             }
         });
 
+        // 不限频率的主游戏循环更新
+        float dt = 0.03;
         while (global_runtime_context->window_system->isAlive()) {
             global_runtime_context->window_system->pollEvents();
 
-            global_runtime_context->scene_manager->tick(0.03);
+            if (!main_loop_timer->is_suspended()) {
+                global_runtime_context->scene_manager->tick(dt);
+            }
 
             global_runtime_context->input_system->swapState();
 
             global_runtime_context->render_system->render();
             
-            global_runtime_context->scene_manager->swap();
+            if (!main_loop_timer->is_suspended()) {
+                global_runtime_context->scene_manager->swap();
+            }
+
+            dt = main_loop_timer->tick();
         }
 
         fixed_tick_thread.join();

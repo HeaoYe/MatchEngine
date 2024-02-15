@@ -66,3 +66,25 @@
     2.改进渲染系统, 支持多级LOD, 支持视锥体剔除, 完全使用GPU Driven Pipeline
 
     3.资产系统
+
+本期大纲
+
+    1.定时器系统
+
+    2.集成相机组件
+
+    3.MatchEditor 游戏引擎编辑器
+
+    4.多级Lod可视化演示
+
+本期大纲
+
+    1.支持7级LOD了，原来是6级
+
+    2.重写了渲染器
+
+    3.支持遮挡剔除，GPU Driven Hierarchical Z-Buffer Occlusion Culling
+
+    4.支持固定裁剪相机
+
+    5.支持垂直同步

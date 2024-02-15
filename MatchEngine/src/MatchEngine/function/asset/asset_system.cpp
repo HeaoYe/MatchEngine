@@ -30,7 +30,6 @@ namespace std {
     };
 }
 
-
 namespace MatchEngine {
     AssetSystem::AssetSystem() {
         initializeRuntimeSystem();
@@ -71,21 +70,24 @@ namespace MatchEngine {
                 lod_index ++;
             }
         } else {
-            size_t lod_index;
+            size_t lod_index = 0;
             size_t last_found_index = 0;
             for (auto lod_shape_name : lods) {
                 bool found = false;
+                size_t lod_shape_index = 0;
                 for (const auto& shape : shapes) {
                     if (shape.name == lod_shape_name) {
                         MCH_CORE_INFO("Find {} as LOD {}", shape.name, lod_index)
-                        lods_shape_index.push_back(lod_index);
-                        last_found_index = lod_index;
+                        lods_shape_index.push_back(lod_shape_index);
+                        last_found_index = lod_shape_index;
                         found = true;
                         break;
                     }
+                    lod_shape_index ++;
                 }
                 if (!found) {
                     MCH_CORE_INFO("Auto Selecet {} as LOD {}", shapes[last_found_index].name, lod_index)
+                    lods_shape_index.push_back(last_found_index);
                 }
                 lod_index ++;
             }
@@ -124,6 +126,9 @@ namespace MatchEngine {
                         attrib.colors[3 * index.vertex_index + 2],
                     };
                 }
+                // 根据Lod层级计算颜色
+                float c = pow((float)(data.lods.size() - 1) / max_level_of_details, 0.8);
+                vertex.color = { c, 0.7 - std::abs(0.5 - c), 1 - c };
 
                 if (unique_vertices.count(vertex) == 0) {
                     unique_vertices.insert(std::make_pair(vertex, primitive.positions.size()));

@@ -10,14 +10,13 @@ namespace MatchEngine {
     // Mesh池, 管理所有Mesh和Primitive(不同层次的Lod模型)
     class MeshPool {
         NoCopyMoveConstruction(MeshPool)
-        friend class MeshPass;
     public:
         MeshPool(uint64_t vertex_memory_size, uint64_t index_memory_size, uint32_t max_mesh_descriptor_count, uint32_t max_primitive_descriptor_count);
         ~MeshPool();
         MeshID uploadMeshData(const MeshData &data);
         uint32_t getMeshCount() const { return current_mesh_discriptor_count; }
         uint32_t getPrimitiveCount() const { return current_primitive_discriptor_count; }
-    private:
+    INNER_VISIBLE:
         uint32_t current_vertex_count;
         uint32_t current_index_count;
         uint32_t max_vertex_count;

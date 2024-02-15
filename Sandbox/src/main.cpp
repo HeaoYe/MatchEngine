@@ -38,12 +38,12 @@ int main() {
     }
 
     // 为相机添加组件
-    camera->addComponet(new CameraController());
+    camera->addComponet(new MatchEngine::Game::CameraControllerComponent());
     camera->addComponet(new MatchEngine::Game::TransformComponent());
     camera->addComponet(new MatchEngine::Game::CameraComponent());
 
     // 引擎运行入口
-    engine.run();
+    engine.gameLoop();
 
     // 引擎销毁入口
     engine.destroy();

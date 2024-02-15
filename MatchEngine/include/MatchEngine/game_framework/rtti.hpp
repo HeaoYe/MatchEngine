@@ -36,6 +36,11 @@ namespace MatchEngine::Game {
         R invokeEx(const std::string &name, Args &&... args) {
             return descriptor->getFunction(name).invokeByPtrEx<R, Args...>(this, std::forward<Args>(args)...);
         }
+
+        const ReflectMemberWrapper &getMember(const std::string &name) const { return descriptor->getMember(name); }
+        const ReflectFunctionWrapper &getFunction(const std::string &name) const { return descriptor->getFunction(name); }
+        const std::vector<std::string> &getMemberNames() const { return descriptor->getMemberNames(); }
+        const std::vector<std::string> &getFunctionNames() const { return descriptor->getFunctionNames(); }
     private:
         const ClassDescriptor *descriptor;
     };

@@ -9,7 +9,7 @@ namespace MatchEngine {
     class AssetSystem : public RuntimeSystem {
         DECLARE_RUNTIME_SYSTEM(AssetSystem)
     public:
-        // 设置搜索资产的跟文件夹
+        // 设置搜索资产的根文件夹
         void setRootDir(const std::string &path);
 
         // 从.obj文件加载一个Mesh

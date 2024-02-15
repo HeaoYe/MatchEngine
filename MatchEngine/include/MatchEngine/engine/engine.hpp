@@ -8,7 +8,7 @@ namespace MatchEngine {
     public:
         bool initialize();
         void destroy();
-        void run();
+        void gameLoop();
     private:
         bool checkRuntimeSystem(const RuntimeSystem *system);
     };

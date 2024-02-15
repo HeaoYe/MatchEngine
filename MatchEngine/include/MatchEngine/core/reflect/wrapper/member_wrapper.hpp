@@ -2,15 +2,55 @@
 
 #include <MatchEngine/core/base/macro.hpp>
 #include <MatchEngine/core/reflect/wrapper/any_wrapper.hpp>
+#include <MatchEngine/game_framework/types.hpp>
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 #include <functional>
+#include <cstdint>
 #include <any>
 
 namespace MatchEngine {
+    enum class MemberType {
+        eInt,
+        eFloat,
+        eBool,
+        eVec2,
+        eVec3,
+        eVec4,
+        eColor3,
+        eColor4,
+        eString,
+        eCustom,
+    };
+
     // 成员变量包装器
     class ReflectMemberWrapper {
     public:
         template <class C, typename T>
         ReflectMemberWrapper(T C::*member_ptr) {
+            if constexpr (std::is_same_v<T, int32_t>) {
+                type = MemberType::eInt;
+            } else if constexpr (std::is_same_v<T, float>) {
+                type = MemberType::eFloat;
+            } else if constexpr (std::is_same_v<T, bool>) {
+                type = MemberType::eBool;
+            } else if constexpr (std::is_same_v<T, glm::vec2>) {
+                type = MemberType::eVec2;
+            } else if constexpr (std::is_same_v<T, glm::vec3>) {
+                type = MemberType::eVec3;
+            } else if constexpr (std::is_same_v<T, glm::vec4>) {
+                type = MemberType::eVec4;
+            } else if constexpr (std::is_same_v<T, Game::color3>) {
+                type = MemberType::eColor3;
+            } else if constexpr (std::is_same_v<T, Game::color4>) {
+                type = MemberType::eColor4;
+            } else if constexpr (std::is_same_v<T, std::string>) {
+                type = MemberType::eString;
+            } else {
+                type = MemberType::eCustom;
+            }
+            
             getter_const = [ptr = member_ptr](const void * obj_ptr) {
                 return &(static_cast<const C *>(obj_ptr)->*ptr);
             };
@@ -45,6 +85,7 @@ namespace MatchEngine {
         }
 
         ReflectMemberWrapper(const ReflectMemberWrapper &rhs) {
+            this->type = rhs.type;
             this->getter_const = rhs.getter_const;
             this->getter_reference = rhs.getter_reference;
             this->setter_copy = rhs.setter_copy;
@@ -56,6 +97,7 @@ namespace MatchEngine {
         }
 
         ReflectMemberWrapper(ReflectMemberWrapper &&rhs) {
+            this->type = std::move(rhs.type);
             this->getter_const = std::move(rhs.getter_const);
             this->getter_reference = std::move(rhs.getter_reference);
             this->setter_copy = std::move(rhs.setter_copy);
@@ -133,7 +175,10 @@ namespace MatchEngine {
                 setter_value(obj, value);
             }
         }
+
+        MemberType getType() const { return type; }
     private:
+        MemberType type;
         std::function<std::any(const void *)> getter_const;
         std::function<std::any(void *)> getter_reference;
         std::function<void(void *, std::any)> setter_copy;

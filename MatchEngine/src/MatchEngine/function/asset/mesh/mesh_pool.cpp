@@ -47,6 +47,8 @@ namespace MatchEngine {
             return MeshID(-1);
         }
         
+        mesh_descriptor_buffer_ptr->aabb_min = { std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max() };
+        mesh_descriptor_buffer_ptr->aabb_max = { std::numeric_limits<float>::min(), std::numeric_limits<float>::min(), std::numeric_limits<float>::min() };
         mesh_descriptor_buffer_ptr->radius = 0;
         size_t lod_index = 0;
         for (auto &primitive : data.lods) {
@@ -68,6 +70,8 @@ namespace MatchEngine {
             lod_index ++;
 
             for (auto &position : primitive.positions) {
+                mesh_descriptor_buffer_ptr->aabb_min = glm::min(mesh_descriptor_buffer_ptr->aabb_min, position);
+                mesh_descriptor_buffer_ptr->aabb_max = glm::max(mesh_descriptor_buffer_ptr->aabb_max, position);
                 mesh_descriptor_buffer_ptr->radius = std::max(mesh_descriptor_buffer_ptr->radius, glm::dot(position, position));
             }
         }

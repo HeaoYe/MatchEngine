@@ -1,0 +1,26 @@
+#version 450
+
+#extension GL_EXT_nonuniform_qualifier : require
+
+layout (binding = 1, r32f) uniform image2D input_depth[];
+layout (binding = 2, r32f) uniform image2D output_depth[];
+
+layout (push_constant) uniform Constants {
+    uvec2 image_size;
+    uint mip_level;
+};
+
+// 2.根据深度纹理mip_level 0的数据生成后续层级的mipmap, 直到mipmap的图片大小为 1x? | ?x1
+layout (local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
+void main() {
+    uvec2 pos = gl_GlobalInvocationID.xy;
+    if (pos.x < image_size.x && pos.y < image_size.y) {
+        float depth = 0;
+        for (int i = 0; i < 2; i ++) {
+            for (int j = 0; j < 2; j ++) {
+                depth = max(depth, imageLoad(input_depth[mip_level - 1], ivec2(pos) * 2 + ivec2(i, j)).r);
+            }
+        }
+        imageStore(output_depth[mip_level], ivec2(pos), vec4(depth));
+    }
+}

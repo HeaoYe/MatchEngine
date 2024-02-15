@@ -57,6 +57,7 @@ namespace MatchEngine {
         void swapState();
         InputState *currentState();
         InputState *lastState();
+        void registerEventListener();
     private:
         InputState input_states[2] {};
         size_t current_state_index;

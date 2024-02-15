@@ -1,7 +1,6 @@
 #pragma once
 
 #include <MatchEngine/game_framework/component/component.hpp>
-#include <MatchEngine/function/render/render_target/render_target.hpp>
 #include <glm/mat4x4.hpp>
 
 namespace MatchEngine::Game {
@@ -12,8 +11,10 @@ namespace MatchEngine::Game {
     public:
         void uploadViewMatrix();
         void uploadProjectMatrix();
+        void uploadNearFar();
     public:
         glm::mat4 view;
         glm::mat4 project;
+        float near, far;
     };
 }
