@@ -9,4 +9,8 @@ namespace MatchEngine::Game {
     void CameraComponent::uploadProjectMatrix() {
         global_runtime_context->render_system->getSwapData()->uploadCameraProjectMatrix(project);
     }
+
+    void CameraComponent::uploadNearFar() {
+        global_runtime_context->render_system->getSwapData()->uploadCameraNearFar(near, far);
+    }
 }

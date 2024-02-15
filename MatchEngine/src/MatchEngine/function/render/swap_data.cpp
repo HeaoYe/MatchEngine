@@ -4,50 +4,42 @@
 namespace MatchEngine {
     SwapData::SwapData() {
         mesh_instance_pool = std::make_unique<MeshInstancePool>(global_runtime_context->render_system->getMaxMeshInstanceCount());
-        camera_uniform_buffer = global_runtime_context->render_system->getMatchFactory()->create_uniform_buffer(sizeof(glm::mat4) * 2 + sizeof(glm::vec4) * 6);
+        camera_uniform_buffer = global_runtime_context->render_system->getMatchFactory()->create_uniform_buffer(sizeof(glm::mat4) * 2 + sizeof(float) * 2);
+        scene_camera_uniform_buffer = global_runtime_context->render_system->getMatchFactory()->create_uniform_buffer(sizeof(glm::mat4) * 2 + sizeof(float) * 2);
+        camera_fixed = false;
+    }
+
+    void SwapData::setCameraFixed(bool fixed) {
+        camera_fixed = fixed;
+        if (!camera_fixed) {
+            static_cast<glm::mat4 *>(camera_uniform_buffer->get_uniform_ptr())[0] = static_cast<glm::mat4 *>(scene_camera_uniform_buffer->get_uniform_ptr())[0];
+            static_cast<glm::mat4 *>(camera_uniform_buffer->get_uniform_ptr())[1] = static_cast<glm::mat4 *>(scene_camera_uniform_buffer->get_uniform_ptr())[1];
+            static_cast<float *>(camera_uniform_buffer->get_uniform_ptr())[32] = static_cast<float *>(scene_camera_uniform_buffer->get_uniform_ptr())[32];
+            static_cast<float *>(camera_uniform_buffer->get_uniform_ptr())[33] = static_cast<float *>(scene_camera_uniform_buffer->get_uniform_ptr())[33];
+        }
     }
 
     void SwapData::uploadCameraViewMatrix(const glm::mat4 &view) {
-        static_cast<glm::mat4 *>(camera_uniform_buffer->get_uniform_ptr())[0] = view;
+        if (!camera_fixed) {
+            static_cast<glm::mat4 *>(camera_uniform_buffer->get_uniform_ptr())[0] = view;
+        }
+        static_cast<glm::mat4 *>(scene_camera_uniform_buffer->get_uniform_ptr())[0] = view;
     }
 
     void SwapData::uploadCameraProjectMatrix(const glm::mat4 &project) {
-        static_cast<glm::mat4 *>(camera_uniform_buffer->get_uniform_ptr())[1] = project;
-        auto planes = static_cast<glm::vec4 *>(camera_uniform_buffer->get_uniform_ptr()) + 8;
-        // Left
-        planes[0].x = { project[0].w + project[0].x };
-        planes[0].y = { project[1].w + project[1].x };
-        planes[0].z = { project[2].w + project[2].x };
-        planes[0].w = { project[3].w + project[3].x };
-        // Right
-        planes[1].x = { project[0].w - project[0].x };
-        planes[1].y = { project[1].w - project[1].x };
-        planes[1].z = { project[2].w - project[2].x };
-        planes[1].w = { project[3].w - project[3].x };
-        // Top
-        planes[2].x = { project[0].w + project[0].y };
-        planes[2].y = { project[1].w + project[1].y };
-        planes[2].z = { project[2].w + project[2].y };
-        planes[2].w = { project[3].w + project[3].y };
-        // Bottom
-        planes[3].x = { project[0].w - project[0].y };
-        planes[3].y = { project[1].w - project[1].y };
-        planes[3].z = { project[2].w - project[2].y };
-        planes[3].w = { project[3].w - project[3].y };
-        // Back
-        planes[4].x = { project[0].w + project[0].z };
-        planes[4].y = { project[1].w + project[1].z };
-        planes[4].z = { project[2].w + project[2].z };
-        planes[4].w = { project[3].w + project[3].z };
-        // Front
-        planes[5].x = { project[0].w - project[0].z };
-        planes[5].y = { project[1].w - project[1].z };
-        planes[5].z = { project[2].w - project[2].z };
-        planes[5].w = { project[3].w - project[3].z };
-
-        for (size_t i = 0; i < 6; i ++) {
-            planes[i] /= glm::sqrt(planes[i].x * planes[i].x + planes[i].y * planes[i].y + planes[i].z * planes[i].z);
+        if (!camera_fixed) {
+            static_cast<glm::mat4 *>(camera_uniform_buffer->get_uniform_ptr())[1] = project;
         }
+        static_cast<glm::mat4 *>(scene_camera_uniform_buffer->get_uniform_ptr())[1] = project;
+    }
+
+    void SwapData::uploadCameraNearFar(float near, float far) {
+        if (!camera_fixed) {
+            static_cast<float *>(camera_uniform_buffer->get_uniform_ptr())[32] = near;
+            static_cast<float *>(camera_uniform_buffer->get_uniform_ptr())[33] = far;
+        }
+        static_cast<float *>(scene_camera_uniform_buffer->get_uniform_ptr())[32] = near;
+        static_cast<float *>(scene_camera_uniform_buffer->get_uniform_ptr())[33] = far;
     }
 
     void SwapData::clear() {

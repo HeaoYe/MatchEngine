@@ -145,6 +145,7 @@ namespace MatchEngine {
     }
     
     void MatchEngine::gameLoop() {
+        global_runtime_context->render_system->getRenderer()->start();
         global_runtime_context->scene_manager->start();
         auto main_loop_timer = global_runtime_context->timer_system->createTimer();
 

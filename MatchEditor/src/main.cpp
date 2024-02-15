@@ -1,5 +1,6 @@
 #include <editor.hpp>
 #include <MatchEngine/MatchEngine.hpp>
+#include <random>
 
 int main() {
     // 通过4行代码，完成编辑游戏引擎
@@ -20,14 +21,20 @@ int main() {
     camera->addComponet(new MatchEngine::Game::PerspectiveCameraComponent(60, 1920 / 1080.0f, 0.1, 1000));
     camera->addComponet(new MatchEngine::Game::CameraControllerComponent());
 
+    // 剔除了60% ~ 80%
+    std::random_device device;
+    std::mt19937 mt(device());
+    std::uniform_real_distribution<float> random_scale(0.7, 1.8);
     // 加载龙
     assets_system->setRootDir("Sandbox/resource");
+    // auto dragon_mesh_id = assets_system->loadMesh("dragon_lods.obj", { "dragon_LOD5" });
     auto dragon_mesh_id = assets_system->loadMesh("dragon_lods.obj");
-    int n = 8, n2 = n / 2;
+    int n = 24, n2 = n / 2;
     for (int i = 0; i < n * n * n; i ++) {
         auto dragon = scene->createGameObject("龙_" + std::to_string(i));
         auto t = new MatchEngine::Game::TransformComponent();
         t->location = { i % n - n2, (i / n) % n - n2, ((i / n) / n) % n - n2 };
+        t->scale = { random_scale(mt), random_scale(mt), random_scale(mt) };
         dragon->addComponet(t);
         dragon->addComponet(new MatchEngine::Game::MeshComponent(dragon_mesh_id));
     }

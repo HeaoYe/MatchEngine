@@ -1,0 +1,43 @@
+#version 450
+
+#extension GL_GOOGLE_include_directive : require
+
+#include "types.glsl"
+
+layout (std430, binding = 0) readonly buffer CountsBuffer {
+    uint visible_mesh_instance_count_div_256;
+    uint y;
+    uint z;
+    uint visible_mesh_instance_count;
+    uint available_indirect_command_count;
+};
+
+layout (std430, binding = 1) readonly buffer VisibleMeshInstanceIndices {
+    uvec2 visible_mesh_instance_indices[];
+};
+
+layout (std430, binding = 3) buffer IndirectCommandsBuffer {
+    VkDrawIndexedIndirectCommand indirect_commands[];
+};
+
+layout (std430, binding = 5) writeonly buffer InstanceData {
+    vec4 instance_datas[];
+};
+
+// 5.将所有可见的MeshInstance的数据按照批次储存在一起
+layout (local_size_x = 256, local_size_y = 1, local_size_z = 1) in;
+void main() {
+    uint mesh_instance_index = gl_GlobalInvocationID.x;
+    if (mesh_instance_index >= visible_mesh_instance_count) {
+        return;
+    }
+    
+    uvec2 instance_info = visible_mesh_instance_indices[mesh_instance_index];
+    MeshInstance mesh_instance = mesh_instances[instance_info.x];
+    uint mesh_id = mesh_instance.mesh_id;
+    uint primitive_index = mesh_descriptors[mesh_id].lods[instance_info.y];
+    uint offset = 3 * (indirect_commands[primitive_index].first_instance + atomicAdd(indirect_commands[primitive_index].instance_count, 1));
+    instance_datas[offset + 0] = vec4(mesh_instance.location, 0);
+    instance_datas[offset + 1] = vec4(mesh_instance.rotation, 0);
+    instance_datas[offset + 2] = vec4(mesh_instance.scale, 0);
+}

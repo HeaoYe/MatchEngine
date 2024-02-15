@@ -17,19 +17,22 @@ namespace MatchEditor {
                     auto &member_desc = component->getMember(member_name);
                     switch (member_desc.getType()) {
                     case MatchEngine::MemberType::eInt:
-                        changed |= ImGui::SliderInt(member_name.c_str(), &member_desc.getValueMutReferenceByPtr<int>(component), -10, 10);
+                        changed |= ImGui::DragInt(member_name.c_str(), &member_desc.getValueMutReferenceByPtr<int>(component));
                         break;
                     case MatchEngine::MemberType::eFloat:
-                        changed |= ImGui::SliderFloat(member_name.c_str(), &member_desc.getValueMutReferenceByPtr<float>(component), -10, 10);
+                        changed |= ImGui::DragFloat(member_name.c_str(), &member_desc.getValueMutReferenceByPtr<float>(component), 0.1);
+                        break;
+                    case MatchEngine::MemberType::eBool:
+                        changed |= ImGui::Checkbox(member_name.c_str(), &member_desc.getValueMutReferenceByPtr<bool>(component));
                         break;
                     case MatchEngine::MemberType::eVec2:
-                        changed |= ImGui::SliderFloat2(member_name.c_str(), &member_desc.getValueMutReferenceByPtr<glm::vec2>(component).x, -10, 10);
+                        changed |= ImGui::DragFloat2(member_name.c_str(), &member_desc.getValueMutReferenceByPtr<glm::vec2>(component).x, 0.1);
                         break;
                     case MatchEngine::MemberType::eVec3:
-                        changed |= ImGui::SliderFloat3(member_name.c_str(), &member_desc.getValueMutReferenceByPtr<glm::vec3>(component).x, -10, 10);
+                        changed |= ImGui::DragFloat3(member_name.c_str(), &member_desc.getValueMutReferenceByPtr<glm::vec3>(component).x, 0.1);
                         break;
                     case MatchEngine::MemberType::eVec4:
-                        changed |= ImGui::SliderFloat4(member_name.c_str(), &member_desc.getValueMutReferenceByPtr<glm::vec4>(component).x, -10, 10);
+                        changed |= ImGui::DragFloat4(member_name.c_str(), &member_desc.getValueMutReferenceByPtr<glm::vec4>(component).x, 0.1);
                         break;
                     case MatchEngine::MemberType::eColor3:
                         changed |= ImGui::ColorEdit3(member_name.c_str(), &member_desc.getValueMutReferenceByPtr<MatchEngine::Game::color3>(component).r);

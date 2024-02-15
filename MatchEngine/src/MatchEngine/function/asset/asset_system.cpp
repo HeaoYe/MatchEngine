@@ -70,21 +70,24 @@ namespace MatchEngine {
                 lod_index ++;
             }
         } else {
-            size_t lod_index;
+            size_t lod_index = 0;
             size_t last_found_index = 0;
             for (auto lod_shape_name : lods) {
                 bool found = false;
+                size_t lod_shape_index = 0;
                 for (const auto& shape : shapes) {
                     if (shape.name == lod_shape_name) {
                         MCH_CORE_INFO("Find {} as LOD {}", shape.name, lod_index)
-                        lods_shape_index.push_back(lod_index);
-                        last_found_index = lod_index;
+                        lods_shape_index.push_back(lod_shape_index);
+                        last_found_index = lod_shape_index;
                         found = true;
                         break;
                     }
+                    lod_shape_index ++;
                 }
                 if (!found) {
                     MCH_CORE_INFO("Auto Selecet {} as LOD {}", shapes[last_found_index].name, lod_index)
+                    lods_shape_index.push_back(last_found_index);
                 }
                 lod_index ++;
             }

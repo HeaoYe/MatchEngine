@@ -1,0 +1,19 @@
+#version 450
+
+layout (binding = 0) uniform sampler2D depth_attachment;
+layout (binding = 1, r32f) uniform image2D input_depth[];
+
+layout (push_constant) uniform Constants {
+    uvec2 image_size;
+    uint mip_level;
+};
+
+// 1.将深度缓存复制到深度纹理的mip_level 0
+layout (local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
+void main() {
+    uvec2 pos = gl_GlobalInvocationID.xy;
+    if (pos.x < image_size.x && pos.y < image_size.y) {
+        imageStore(input_depth[0], ivec2(pos), vec4(texture(depth_attachment, vec2(pos) / vec2(image_size)).r));
+        return;
+    }
+}

@@ -1,0 +1,31 @@
+#version 450
+
+#extension GL_GOOGLE_include_directive : require
+
+#include "types.glsl"
+
+layout (std430, binding = 2) readonly buffer PrimitiveCountsBuffer {
+    uint primitive_counts[];
+};
+
+layout (std430, binding = 3) writeonly buffer IndirectCommandsBuffer {
+    VkDrawIndexedIndirectCommand indirect_commands[];
+};
+
+// 4.重置IndirectCommand模板
+layout (local_size_x = 256, local_size_y = 1, local_size_z = 1) in;
+void main() {
+    uint primitive_index = gl_GlobalInvocationID.x;
+    if (primitive_index >= primitive_count) {
+        return;
+    }
+
+    indirect_commands[primitive_index].index_count = primitive_descriptors[primitive_index].index_count;
+    indirect_commands[primitive_index].first_index = primitive_descriptors[primitive_index].first_index;
+    indirect_commands[primitive_index].vertex_offset = primitive_descriptors[primitive_index].vertex_offset;
+    indirect_commands[primitive_index].instance_count = 0;
+    indirect_commands[primitive_index].first_instance = 0;
+    for (int i = 0; i < primitive_index; i ++) {
+        indirect_commands[primitive_index].first_instance += primitive_counts[i];
+    }
+}

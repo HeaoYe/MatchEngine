@@ -12,9 +12,9 @@ namespace MatchEngine::Renderer {
         Subpass(const std::string &name) : name(name) {}
         virtual ~Subpass() = default;
 
-        virtual void createRenderResource(Match::RenderPassBuilder &builder, Resource &resource) {}
-        virtual void postCreateRenderResource(std::shared_ptr<Match::Renderer> renderer, Resource &resource) {}
+        virtual void createRenderResource(Match::RenderPassBuilder &builder) {}
         virtual void buildPassDescriptor(Match::SubpassBuilder &builder) {}
+        virtual void postCreateRenderResource(std::shared_ptr<Match::Renderer> renderer, Resource &resource) {}
         virtual void executePreRenderPass(std::shared_ptr<Match::Renderer> renderer, Resource &resource) {}
         virtual void executeRenderPass(std::shared_ptr<Match::Renderer> renderer, Resource &resource) {}
         virtual void executePostRenderPass(std::shared_ptr<Match::Renderer> renderer, Resource &resource) {}

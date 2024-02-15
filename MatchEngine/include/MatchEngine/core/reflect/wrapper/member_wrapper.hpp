@@ -14,6 +14,7 @@ namespace MatchEngine {
     enum class MemberType {
         eInt,
         eFloat,
+        eBool,
         eVec2,
         eVec3,
         eVec4,
@@ -32,6 +33,8 @@ namespace MatchEngine {
                 type = MemberType::eInt;
             } else if constexpr (std::is_same_v<T, float>) {
                 type = MemberType::eFloat;
+            } else if constexpr (std::is_same_v<T, bool>) {
+                type = MemberType::eBool;
             } else if constexpr (std::is_same_v<T, glm::vec2>) {
                 type = MemberType::eVec2;
             } else if constexpr (std::is_same_v<T, glm::vec3>) {

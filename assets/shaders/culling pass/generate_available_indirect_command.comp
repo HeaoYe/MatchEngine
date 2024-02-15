@@ -1,0 +1,41 @@
+#version 450
+
+#extension GL_GOOGLE_include_directive : require
+
+#include "types.glsl"
+
+layout (std430, binding = 0) writeonly buffer CountsBuffer {
+    uint visible_mesh_instance_count_div_256;
+    uint y;
+    uint z;
+    uint visible_mesh_instance_count;
+    uint available_indirect_command_count;
+};
+
+layout (std430, binding = 2) writeonly buffer PrimitiveCountsBuffer {
+    uint primitive_counts[];
+};
+
+layout (std430, binding = 3) readonly buffer IndirectCommandsBuffer {
+    VkDrawIndexedIndirectCommand indirect_commands[];
+};
+
+layout (std430, binding = 4) writeonly buffer AvailableIndirectCommandsBuffer {
+    VkDrawIndexedIndirectCommand available_indirect_commands_buffer[];
+};
+
+
+// 6.生成最终的IndirectCommand, 从模板IndirectCommand中剔除不绘制任何实例的IndirectCommand
+layout (local_size_x = 256, local_size_y = 1, local_size_z = 1) in;
+void main() {
+    uint primitive_index = gl_GlobalInvocationID.x;
+    if (primitive_index >= primitive_count) {
+        return;
+    }
+
+    if (indirect_commands[primitive_index].instance_count > 0) {
+        uint available_indirect_command_index = atomicAdd(available_indirect_command_count, 1);
+        available_indirect_commands_buffer[available_indirect_command_index] = indirect_commands[primitive_index];
+    }
+    primitive_counts[primitive_index] = 0;
+}

@@ -11,8 +11,10 @@ namespace MatchEngine::Game {
     public:
         void uploadViewMatrix();
         void uploadProjectMatrix();
+        void uploadNearFar();
     public:
         glm::mat4 view;
         glm::mat4 project;
+        float near, far;
     };
 }
