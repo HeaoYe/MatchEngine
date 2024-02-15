@@ -10,13 +10,15 @@ namespace MatchEngine::Game {
         calculatePerspectiveMatrix(fovDegrees, width, height, near, far);
     }
 
+    void PerspectiveCameraComponent::onStart() {
+        uploadProjectMatrix();
+    }
+
     void PerspectiveCameraComponent::calculatePerspectiveMatrix(float fovDegrees, float aspect, float near, float far) {
         project = glm::perspective(glm::radians(fovDegrees), aspect, near, far);
-        uploadProjectMatrix();
     }
     
     void PerspectiveCameraComponent::calculatePerspectiveMatrix(float fovDegrees, float width, float height, float near, float far) {
         project = glm::perspectiveFov(glm::radians(fovDegrees), width, height, near, far);
-        uploadProjectMatrix();
     }
 }

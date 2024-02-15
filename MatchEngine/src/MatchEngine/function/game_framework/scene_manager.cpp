@@ -21,7 +21,7 @@ namespace MatchEngine {
         auto *scene = new Game::Scene(name);
         scenes.insert(std::make_pair(name, scene));
         if (active_scene == nullptr) {
-            setActiveScene(scene);
+            active_scene = scene;
         }
         return scene;
     }
@@ -35,8 +35,8 @@ namespace MatchEngine {
     }
     
     void SceneManager::start() {
+        global_runtime_context->render_system->getSwapData()->clear();
         active_scene->start();
-        global_runtime_context->render_system->postActiveSceneStart();
     }
     
     void SceneManager::fixedTick() {
@@ -52,17 +52,9 @@ namespace MatchEngine {
         if (change_scene == nullptr) {
             return;
         }
-        setActiveScene(change_scene);
+        active_scene = change_scene;
         change_scene = nullptr;
         start();
-    }
-    
-    void SceneManager::setActiveScene(Game::Scene *scene) {
-        if (active_scene != nullptr) {
-            global_runtime_context->render_system->destoryActiveSceneRenderer();
-        }
-        active_scene = scene;
-        global_runtime_context->render_system->createActiveSceneRenderer();
     }
     
     SceneManager::~SceneManager() {

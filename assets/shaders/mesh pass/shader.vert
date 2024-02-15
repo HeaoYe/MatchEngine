@@ -1,7 +1,5 @@
 #version 450
 
-#extension GL_ARB_shader_draw_parameters : require
-
 layout (location = 0) in vec3 pos;
 layout (location = 1) in vec3 normal;
 layout (location = 2) in vec2 uv;
@@ -15,7 +13,6 @@ layout (location = 0) out vec3 frag_pos;
 layout (location = 1) out vec3 frag_normal;
 layout (location = 2) out vec3 frag_color;
 layout (location = 3) out vec2 frag_uv;
-layout (location = 4) out flat uint draw_id;
 
 layout (binding = 0) uniform Camera {
     mat4 view;
@@ -53,5 +50,4 @@ void main() {
     frag_normal = normalize(transpose(inverse(model)) * normal);
     frag_color = color;
     frag_uv = uv;
-    draw_id = gl_DrawIDARB;
 }

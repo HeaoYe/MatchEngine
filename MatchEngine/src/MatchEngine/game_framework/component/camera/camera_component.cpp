@@ -3,10 +3,10 @@
 
 namespace MatchEngine::Game {
     void CameraComponent::uploadViewMatrix() {
-        global_runtime_context->render_system->getActiveSceneRenderer()->getSwapData()->uploadCameraViewMatrix(view);
+        global_runtime_context->render_system->getSwapData()->uploadCameraViewMatrix(view);
     }
 
     void CameraComponent::uploadProjectMatrix() {
-        global_runtime_context->render_system->getActiveSceneRenderer()->getSwapData()->uploadCameraProjectMatrix(project);
+        global_runtime_context->render_system->getSwapData()->uploadCameraProjectMatrix(project);
     }
 }

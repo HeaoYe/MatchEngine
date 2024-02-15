@@ -1,62 +1,42 @@
-#include <MatchEngine/function/render/pass/mesh_pass.hpp>
+#include <MatchEngine/function/render/render_framework/mesh_pass.hpp>
 #include "internal.hpp"
 
-namespace MatchEngine {
-    MeshPass::MeshPass() : Subpass("mesh pass") {}
-
+namespace MatchEngine::Renderer {
     MeshPass::~MeshPass() {
         for (auto fence : compute_fences) {
-            global_runtime_context->window_system->getAPIManager()->device->device.destroyFence(fence);
+            global_runtime_context->render_system->getMatchAPIManager()->device->device.destroyFence(fence);
         }
     }
 
-    void MeshPass::createAttachent(Match::RenderPassBuilder &builder) {
+    void MeshPass::createRenderResource(Match::RenderPassBuilder &builder, Resource &resource) {
         builder.add_attachment("depth", Match::AttachmentType::eDepth);
     }
 
-    void MeshPass::buildPassDescriptor(Match::SubpassBuilder &builder) {
-        builder.attach_depth_attachment("depth")
-            .attach_output_attachment(global_runtime_context->render_system->getOutputAttachmentName())
-            .wait_for(
-                Match::EXTERNAL_SUBPASS,
-                {
-                    .stage = vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests,
-                    .access = vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eDepthStencilAttachmentWrite,
-                },
-                {
-                    .stage = vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests,
-                    .access = vk::AccessFlagBits::eNone,
-                }
-            );
-    }
-
-    void MeshPass::start(std::shared_ptr<Match::Renderer> renderer) {
+    void MeshPass::postCreateRenderResource(std::shared_ptr<Match::Renderer> renderer, Resource &resource) {
+        auto manager = global_runtime_context->render_system->getMatchAPIManager();
         auto factory = global_runtime_context->render_system->getMatchFactory();
         auto max_primitive_count = global_runtime_context->assets_system->getMaxPrimitiveCount();
-        auto mesh_instance_count = global_runtime_context->render_system->getActiveSceneRenderer()->getSwapData()->getMeshInstancePool()->getMeshInstanceCount();
-        mesh_instance_count += 256;
+        auto max_mesh_instance_count = global_runtime_context->render_system->getMaxMeshInstanceCount();
 
-        counts_buffer = std::make_shared<Match::InFlightBuffer>(sizeof(uint32_t) * 5, vk::BufferUsageFlagBits::eIndirectBuffer | vk::BufferUsageFlagBits::eStorageBuffer, VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
-        primitive_counts_buffer = std::make_shared<Match::InFlightBuffer>(sizeof(uint32_t) * max_primitive_count, vk::BufferUsageFlagBits::eStorageBuffer, VMA_MEMORY_USAGE_GPU_ONLY, VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT);
-        visible_mesh_instance_indices_buffer = std::make_shared<Match::InFlightBuffer>(sizeof(uint32_t) * 2 * mesh_instance_count, vk::BufferUsageFlagBits::eStorageBuffer, VMA_MEMORY_USAGE_GPU_ONLY, VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT);
-        indirect_commands_buffer = std::make_shared<Match::InFlightBuffer>(sizeof(vk::DrawIndexedIndirectCommand) * max_primitive_count, vk::BufferUsageFlagBits::eStorageBuffer, VMA_MEMORY_USAGE_GPU_ONLY, VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT);
-        available_indirect_commands_buffer = std::make_shared<Match::InFlightBuffer>(indirect_commands_buffer->get_size(), vk::BufferUsageFlagBits::eIndirectBuffer | vk::BufferUsageFlagBits::eStorageBuffer, VMA_MEMORY_USAGE_GPU_ONLY, VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT);
-        instance_locations_buffer = std::make_shared<Match::InFlightBuffer>(sizeof(glm::vec4) * mesh_instance_count, vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eStorageBuffer, VMA_MEMORY_USAGE_GPU_ONLY, VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT);
-        instance_rotations_buffer = std::make_shared<Match::InFlightBuffer>(sizeof(glm::vec4) * mesh_instance_count, vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eStorageBuffer, VMA_MEMORY_USAGE_GPU_ONLY, VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT);
-        instance_scales_buffer = std::make_shared<Match::InFlightBuffer>(sizeof(glm::vec4) * mesh_instance_count, vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eStorageBuffer, VMA_MEMORY_USAGE_GPU_ONLY, VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT);
-
-        visibility_buffer = std::make_shared<Match::InFlightBuffer>(sizeof(uint64_t) * 1920 * 1080, vk::BufferUsageFlagBits::eStorageBuffer, VMA_MEMORY_USAGE_GPU_ONLY, VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT);
+        resource.counts_buffer = std::make_shared<Match::InFlightBuffer>(sizeof(uint32_t) * 5, vk::BufferUsageFlagBits::eIndirectBuffer | vk::BufferUsageFlagBits::eStorageBuffer, VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
+        resource.primitive_counts_buffer = std::make_shared<Match::InFlightBuffer>(sizeof(uint32_t) * max_primitive_count, vk::BufferUsageFlagBits::eStorageBuffer, VMA_MEMORY_USAGE_GPU_ONLY, VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT);
+        resource.visible_mesh_instance_indices_buffer = std::make_shared<Match::InFlightBuffer>(sizeof(uint32_t) * 2 * max_mesh_instance_count, vk::BufferUsageFlagBits::eStorageBuffer, VMA_MEMORY_USAGE_GPU_ONLY, VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT);
+        resource.indirect_commands_buffer = std::make_shared<Match::InFlightBuffer>(sizeof(vk::DrawIndexedIndirectCommand) * max_primitive_count, vk::BufferUsageFlagBits::eStorageBuffer, VMA_MEMORY_USAGE_GPU_ONLY, VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT);
+        resource.available_indirect_commands_buffer = std::make_shared<Match::InFlightBuffer>(resource.indirect_commands_buffer->get_size(), vk::BufferUsageFlagBits::eIndirectBuffer | vk::BufferUsageFlagBits::eStorageBuffer, VMA_MEMORY_USAGE_GPU_ONLY, VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT);
+        resource.instance_locations_buffer = std::make_shared<Match::InFlightBuffer>(sizeof(glm::vec4) * max_mesh_instance_count, vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eStorageBuffer, VMA_MEMORY_USAGE_GPU_ONLY, VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT);
+        resource.instance_rotations_buffer = std::make_shared<Match::InFlightBuffer>(sizeof(glm::vec4) * max_mesh_instance_count, vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eStorageBuffer, VMA_MEMORY_USAGE_GPU_ONLY, VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT);
+        resource.instance_scales_buffer = std::make_shared<Match::InFlightBuffer>(sizeof(glm::vec4) * max_mesh_instance_count, vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eStorageBuffer, VMA_MEMORY_USAGE_GPU_ONLY, VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT);
 
         vk::FenceCreateInfo fci {};
-        command_buffers = global_runtime_context->window_system->getAPIManager()->command_pool->allocate_command_buffer(Match::setting.max_in_flight_frame);
-        for (auto &buffer : counts_buffer->in_flight_buffers) {
-            counts_ptrs.push_back(static_cast<uint32_t *>(buffer->map()));
-            counts_ptrs.back()[0] = 1;
-            counts_ptrs.back()[1] = 1;
-            counts_ptrs.back()[2] = 1;
-            counts_ptrs.back()[3] = 0;
-            counts_ptrs.back()[4] = 0;
-            compute_fences.push_back(global_runtime_context->window_system->getAPIManager()->device->device.createFence(fci));
+        command_buffers = manager->command_pool->allocate_command_buffer(Match::setting.max_in_flight_frame);
+        for (auto &buffer : resource.counts_buffer->in_flight_buffers) {
+            resource.counts_ptrs.push_back(static_cast<uint32_t *>(buffer->map()));
+            resource.counts_ptrs.back()[0] = 1;
+            resource.counts_ptrs.back()[1] = 1;
+            resource.counts_ptrs.back()[2] = 1;
+            resource.counts_ptrs.back()[3] = 0;
+            resource.counts_ptrs.back()[4] = 0;
+            compute_fences.push_back(manager->device->device.createFence(fci));
         }
 
         mesh_shader_program_descriptor_set = factory->create_descriptor_set();
@@ -64,8 +44,7 @@ namespace MatchEngine {
             { Match::ShaderStage::eVertex | Match::ShaderStage::eCompute, 0, Match::DescriptorType::eUniform },
             { Match::ShaderStage::eFragment, 1, Match::DescriptorType::eStorageBuffer }
         }).allocate()
-            .bind_uniform(0, global_runtime_context->render_system->getActiveSceneRenderer()->getSwapData()->getCameraUniformBuffer())
-            .bind_storage_buffer(1, visibility_buffer);
+            .bind_uniform(0, global_runtime_context->render_system->getSwapData()->getCameraUniformBuffer());
 
         compute_shader_program_descriptor_set = factory->create_descriptor_set();
         compute_shader_program_descriptor_set->add_descriptors({
@@ -81,17 +60,17 @@ namespace MatchEngine {
             { Match::ShaderStage::eCompute, 9, Match::DescriptorType::eStorageBuffer },
             { Match::ShaderStage::eCompute, 10, Match::DescriptorType::eStorageBuffer },
         }).allocate()
-            .bind_storage_buffer(0, counts_buffer)
-            .bind_storage_buffer(1, primitive_counts_buffer)
-            .bind_storage_buffer(2, global_runtime_context->render_system->getActiveSceneRenderer()->getSwapData()->getMeshInstancePool()->mesh_instance_buffer)
-            .bind_storage_buffer(3, visible_mesh_instance_indices_buffer)
+            .bind_storage_buffer(0, resource.counts_buffer)
+            .bind_storage_buffer(1, resource.primitive_counts_buffer)
+            .bind_storage_buffer(2, global_runtime_context->render_system->getSwapData()->getMeshInstancePool()->mesh_instance_buffer)
+            .bind_storage_buffer(3, resource.visible_mesh_instance_indices_buffer)
             .bind_storage_buffer(4, global_runtime_context->assets_system->getMeshPool()->mesh_descriptor_buffer)
             .bind_storage_buffer(5, global_runtime_context->assets_system->getMeshPool()->primitive_descriptor_buffer)
-            .bind_storage_buffer(6, indirect_commands_buffer)
-            .bind_storage_buffer(7, available_indirect_commands_buffer)
-            .bind_storage_buffer(8, instance_locations_buffer)
-            .bind_storage_buffer(9, instance_rotations_buffer)
-            .bind_storage_buffer(10, instance_scales_buffer);
+            .bind_storage_buffer(6, resource.indirect_commands_buffer)
+            .bind_storage_buffer(7, resource.available_indirect_commands_buffer)
+            .bind_storage_buffer(8, resource.instance_locations_buffer)
+            .bind_storage_buffer(9, resource.instance_rotations_buffer)
+            .bind_storage_buffer(10, resource.instance_scales_buffer);
 
         compute_shader_constants = factory->create_push_constants(Match::ShaderStage::eCompute, {
             { "mesh_instance_count", Match::ConstantType::eUint32 },
@@ -169,8 +148,24 @@ namespace MatchEngine {
             });
     }
 
-    void MeshPass::executePreRenderPass(std::shared_ptr<Match::Renderer> renderer) {
-        uint32_t mesh_instance_count = global_runtime_context->render_system->getActiveSceneRenderer()->getSwapData()->getMeshInstancePool()->getMeshInstanceCount();
+    void MeshPass::buildPassDescriptor(Match::SubpassBuilder &builder) {
+        builder.attach_depth_attachment("depth")
+            .attach_output_attachment(output_attachment_name)
+            .wait_for(
+                Match::EXTERNAL_SUBPASS,
+                {
+                    .stage = vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests,
+                    .access = vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eDepthStencilAttachmentWrite,
+                },
+                {
+                    .stage = vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests,
+                    .access = vk::AccessFlagBits::eNone,
+                }
+            );
+    }
+
+    void MeshPass::executePreRenderPass(std::shared_ptr<Match::Renderer> renderer, Resource &resource) {
+        uint32_t mesh_instance_count = global_runtime_context->render_system->getSwapData()->getMeshInstancePool()->current_instance_count;
         uint32_t primitive_count = global_runtime_context->assets_system->getMeshPool()->getPrimitiveCount();
         compute_shader_constants->push_constant("mesh_instance_count", mesh_instance_count);
         compute_shader_constants->push_constant("primitive_count", primitive_count);
@@ -181,17 +176,17 @@ namespace MatchEngine {
         command_buffer.reset();
         vk::CommandBufferBeginInfo begin_info {};
         command_buffer.begin(begin_info);
-        counts_ptrs[renderer->current_in_flight][0] = 1;
-        counts_ptrs[renderer->current_in_flight][3] = 0;
-        counts_ptrs[renderer->current_in_flight][4] = 0;
+        resource.counts_ptrs[renderer->current_in_flight][0] = 1;
+        resource.counts_ptrs[renderer->current_in_flight][3] = 0;
+        resource.counts_ptrs[renderer->current_in_flight][4] = 0;
 
         renderer->bind_shader_program(collect_mesh_instance_shader_program);
         renderer->dispatch(std::ceil(mesh_instance_count / 64.0f));
 
         vk::BufferMemoryBarrier barrier {};
-        barrier.setBuffer(primitive_counts_buffer->get_buffer(renderer->current_in_flight))
+        barrier.setBuffer(resource.primitive_counts_buffer->get_buffer(renderer->current_in_flight))
             .setOffset(0)
-            .setSize(primitive_counts_buffer->get_size())
+            .setSize(resource.primitive_counts_buffer->get_size())
             .setSrcAccessMask(vk::AccessFlagBits::eShaderWrite)
             .setDstAccessMask(vk::AccessFlagBits::eShaderRead);
         command_buffer.pipelineBarrier(
@@ -203,8 +198,8 @@ namespace MatchEngine {
         renderer->bind_shader_program(generate_indirect_command_shader_program);
         renderer->dispatch(std::ceil(primitive_count / 64.0f));
 
-        barrier.setBuffer(counts_buffer->get_buffer(renderer->current_in_flight))
-            .setSize(counts_buffer->get_size())
+        barrier.setBuffer(resource.counts_buffer->get_buffer(renderer->current_in_flight))
+            .setSize(resource.counts_buffer->get_size())
             // .setSrcAccessMask(vk::AccessFlagBits::eShaderWrite)
             .setDstAccessMask(vk::AccessFlagBits::eIndirectCommandRead | vk::AccessFlagBits::eShaderRead);
         command_buffer.pipelineBarrier(
@@ -213,8 +208,8 @@ namespace MatchEngine {
             {}, {}, barrier, {}
         );
 
-        barrier.setBuffer(visible_mesh_instance_indices_buffer->get_buffer(renderer->current_in_flight))
-            .setSize(visible_mesh_instance_indices_buffer->get_size())
+        barrier.setBuffer(resource.visible_mesh_instance_indices_buffer->get_buffer(renderer->current_in_flight))
+            .setSize(resource.visible_mesh_instance_indices_buffer->get_size())
             // .setSrcAccessMask(vk::AccessFlagBits::eShaderWrite)
             .setDstAccessMask(vk::AccessFlagBits::eShaderRead);
         command_buffer.pipelineBarrier(
@@ -223,8 +218,8 @@ namespace MatchEngine {
             {}, {}, barrier, {}
         );
 
-        barrier.setBuffer(indirect_commands_buffer->get_buffer(renderer->current_in_flight))
-            .setSize(indirect_commands_buffer->get_size())
+        barrier.setBuffer(resource.indirect_commands_buffer->get_buffer(renderer->current_in_flight))
+            .setSize(resource.indirect_commands_buffer->get_size())
             // .setSrcAccessMask(vk::AccessFlagBits::eShaderWrite)
             .setDstAccessMask(vk::AccessFlagBits::eShaderRead | vk::AccessFlagBits::eShaderWrite);
         command_buffer.pipelineBarrier(
@@ -234,10 +229,10 @@ namespace MatchEngine {
         );
 
         renderer->bind_shader_program(compact_instance_data_shader_program);
-        command_buffer.dispatchIndirect(counts_buffer->get_buffer(renderer->current_in_flight), 0);
+        command_buffer.dispatchIndirect(resource.counts_buffer->get_buffer(renderer->current_in_flight), 0);
 
-        barrier.setBuffer(counts_buffer->get_buffer(renderer->current_in_flight))
-            .setSize(counts_buffer->get_size())
+        barrier.setBuffer(resource.counts_buffer->get_buffer(renderer->current_in_flight))
+            .setSize(resource.counts_buffer->get_size())
             // .setSrcAccessMask(vk::AccessFlagBits::eShaderWrite)
             .setDstAccessMask(vk::AccessFlagBits::eShaderWrite);
         command_buffer.pipelineBarrier(
@@ -251,16 +246,16 @@ namespace MatchEngine {
 
         command_buffer.end();
 
-        global_runtime_context->window_system->getAPIManager()->device->device.resetFences(compute_fences[renderer->current_in_flight]);
+        global_runtime_context->render_system->getMatchAPIManager()->device->device.resetFences(compute_fences[renderer->current_in_flight]);
         vk::SubmitInfo submit_info {};
         submit_info.setCommandBuffers(command_buffer);
-        global_runtime_context->window_system->getAPIManager()->device->compute_queue.submit(submit_info, compute_fences[renderer->current_in_flight]);
+        global_runtime_context->render_system->getMatchAPIManager()->device->compute_queue.submit(submit_info, compute_fences[renderer->current_in_flight]);
 
         renderer->current_buffer = temp;
     }
     
-    void MeshPass::executeRenderPass(std::shared_ptr<Match::Renderer> renderer) {
-        vk_check(global_runtime_context->window_system->getAPIManager()->device->device.waitForFences(compute_fences[renderer->current_in_flight], VK_TRUE, std::numeric_limits<uint64_t>::max()));
+    void MeshPass::executeRenderPass(std::shared_ptr<Match::Renderer> renderer, Resource &resource) {
+        vk_check(global_runtime_context->render_system->getMatchAPIManager()->device->device.waitForFences(compute_fences[renderer->current_in_flight], VK_TRUE, std::numeric_limits<uint64_t>::max()));
         auto command_buffer = renderer->get_command_buffer();
 
         command_buffer.bindVertexBuffers(0, {
@@ -268,21 +263,21 @@ namespace MatchEngine {
             global_runtime_context->assets_system->getMeshPool()->normal_buffer->buffer->buffer,
             global_runtime_context->assets_system->getMeshPool()->tex_coord_buffer->buffer->buffer,
             global_runtime_context->assets_system->getMeshPool()->color_buffer->buffer->buffer,
-            instance_locations_buffer->get_buffer(renderer->current_in_flight),
-            instance_rotations_buffer->get_buffer(renderer->current_in_flight),
-            instance_scales_buffer->get_buffer(renderer->current_in_flight)
+            resource.instance_locations_buffer->get_buffer(renderer->current_in_flight),
+            resource.instance_rotations_buffer->get_buffer(renderer->current_in_flight),
+            resource.instance_scales_buffer->get_buffer(renderer->current_in_flight)
         }, { 0, 0, 0, 0, 0, 0, 0 });
         renderer->bind_index_buffer(global_runtime_context->assets_system->getMeshPool()->index_buffer);
 
         renderer->bind_shader_program(mesh_pre_z_shader_program);
-        for (size_t i = 0; i < counts_ptrs[renderer->current_in_flight][4]; i ++) {
-            command_buffer.drawIndexedIndirect(available_indirect_commands_buffer->get_buffer(renderer->current_in_flight), sizeof(vk::DrawIndexedIndirectCommand) * i, 1, sizeof(vk::DrawIndexedIndirectCommand));
+        for (size_t i = 0; i < resource.counts_ptrs[renderer->current_in_flight][4]; i ++) {
+            command_buffer.drawIndexedIndirect(resource.available_indirect_commands_buffer->get_buffer(renderer->current_in_flight), sizeof(vk::DrawIndexedIndirectCommand) * i, 1, sizeof(vk::DrawIndexedIndirectCommand));
         }
 
         renderer->bind_shader_program(mesh_shader_program);
-        for (size_t i = 0; i < counts_ptrs[renderer->current_in_flight][4]; i ++) {
-            command_buffer.drawIndexedIndirect(available_indirect_commands_buffer->get_buffer(renderer->current_in_flight), sizeof(vk::DrawIndexedIndirectCommand) * i, 1, sizeof(vk::DrawIndexedIndirectCommand));
+        for (size_t i = 0; i < resource.counts_ptrs[renderer->current_in_flight][4]; i ++) {
+            command_buffer.drawIndexedIndirect(resource.available_indirect_commands_buffer->get_buffer(renderer->current_in_flight), sizeof(vk::DrawIndexedIndirectCommand) * i, 1, sizeof(vk::DrawIndexedIndirectCommand));
         }
-        // command_buffer.drawIndexedIndirect(available_indirect_commands_buffer->get_buffer(renderer->current_in_flight), 0, counts_ptrs[renderer->current_in_flight][4], sizeof(vk::DrawIndexedIndirectCommand));
+        // command_buffer.drawIndexedIndirect(resource.available_indirect_commands_buffer->get_buffer(renderer->current_in_flight), 0, counts_ptrs[renderer->current_in_flight][4], sizeof(vk::DrawIndexedIndirectCommand));
     }
 }

@@ -12,6 +12,7 @@
 #include <MatchEngine/function/game_framework/scene_manager.hpp>
 #include <MatchEngine/function/render/render_system.hpp>
 #include <MatchEngine/function/asset/asset_system.hpp>
+#include <Match/constant.hpp>
 
 namespace MatchEngine {
     // 管理全部运行时系统
@@ -28,4 +29,8 @@ namespace MatchEngine {
         Singleton<RenderSystem> render_system;
         Singleton<AssetSystem> assets_system;
     };
+
+    namespace Renderer {
+        extern std::string output_attachment_name;
+    }
 }

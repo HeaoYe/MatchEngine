@@ -6,8 +6,11 @@ namespace MatchEngine::Game {
         calculateOrthographicMatrix(left, right, bottom, top, near, far);
     }
 
+    void OrthographicCameraComponent::onStart() {
+        uploadProjectMatrix();
+    }
+
     void OrthographicCameraComponent::calculateOrthographicMatrix(float left, float right, float bottom, float top, float near, float far) {
         project = glm::ortho(left, right, bottom, top, near, far);
-        uploadProjectMatrix();
     }
 }

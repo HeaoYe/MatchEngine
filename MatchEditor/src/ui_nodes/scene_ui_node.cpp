@@ -20,20 +20,17 @@ namespace MatchEditor {
         MatchEngine::global_runtime_context->event_system->addEventListener<MatchEngine::MouseScrollEvent>([&](auto &event) {
             return (!scene_focus) || (!scene_hover);
         }, "ImGui Event Block");
-    }
 
-    void SceneUINode::preSceneRendererStart() {
-        auto renderer = MatchEngine::global_runtime_context->render_system->getActiveSceneRenderer()->renderer;
-
-        callback_id = renderer->register_resource_recreate_callback([&]() {
+        auto renderer = MatchEngine::global_runtime_context->render_system->getRenderer()->renderer;
+        callback_id = renderer->register_resource_recreate_callback([this]() {
             for (auto texture : in_flight_textures) {
                 ImGui_ImplVulkan_RemoveTexture(texture);
             }
             in_flight_textures.clear();
 
-            auto scene_renderer = MatchEngine::global_runtime_context->render_system->getActiveSceneRenderer();
-            auto idx = scene_renderer->renderer->render_pass_builder->get_attachment_index(MatchEngine::global_runtime_context->render_system->getOutputAttachmentName(), true);
-            auto &attachment_info = scene_renderer->renderer->render_pass_builder->attachments.at(idx);
+            auto renderer = MatchEngine::global_runtime_context->render_system->getRenderer()->renderer;
+            auto idx = renderer->render_pass_builder->get_attachment_index(MatchEngine::Renderer::output_attachment_name, true);
+            auto &attachment_info = renderer->render_pass_builder->attachments.at(idx);
             auto layout = attachment_info.description_write.finalLayout;
             if (attachment_info.description_read.has_value()) {
                 layout = attachment_info.description_read->finalLayout;
@@ -42,7 +39,7 @@ namespace MatchEditor {
             for (size_t in_flight_index = 0; in_flight_index < Match::setting.max_in_flight_frame; in_flight_index ++) {
                 in_flight_textures.push_back(ImGui_ImplVulkan_AddTexture(
                     sampler->sampler,
-                    scene_renderer->renderer->framebuffer_set->attachments.at(idx).image_view,
+                    renderer->framebuffer_set->attachments.at(idx).image_view,
                     static_cast<VkImageLayout>(layout)
                 ));
             }
@@ -50,8 +47,8 @@ namespace MatchEditor {
         renderer->callbacks.at(callback_id)();
     }
 
-    void SceneUINode::onUnloadScene() {
-        auto renderer = MatchEngine::global_runtime_context->render_system->getActiveSceneRenderer()->renderer;
+    SceneUINode::~SceneUINode() {
+        auto renderer = MatchEngine::global_runtime_context->render_system->getRenderer()->renderer;
         renderer->remove_resource_recreate_callback(callback_id);
 
         for (auto texture : in_flight_textures) {

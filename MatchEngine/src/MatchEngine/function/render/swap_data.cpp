@@ -1,17 +1,17 @@
-#include <MatchEngine/function/render/scene/scene_swap_data.hpp>
+#include <MatchEngine/function/render/swap_data.hpp>
 #include <internal.hpp>
 
 namespace MatchEngine {
-    SceneSwapData::SceneSwapData() {
-        mesh_instance_pool = std::make_unique<MeshInstancePool>(16384);
+    SwapData::SwapData() {
+        mesh_instance_pool = std::make_unique<MeshInstancePool>(global_runtime_context->render_system->getMaxMeshInstanceCount());
         camera_uniform_buffer = global_runtime_context->render_system->getMatchFactory()->create_uniform_buffer(sizeof(glm::mat4) * 2 + sizeof(glm::vec4) * 6);
     }
 
-    void SceneSwapData::uploadCameraViewMatrix(const glm::mat4 &view) {
+    void SwapData::uploadCameraViewMatrix(const glm::mat4 &view) {
         static_cast<glm::mat4 *>(camera_uniform_buffer->get_uniform_ptr())[0] = view;
     }
 
-    void SceneSwapData::uploadCameraProjectMatrix(const glm::mat4 &project) {
+    void SwapData::uploadCameraProjectMatrix(const glm::mat4 &project) {
         static_cast<glm::mat4 *>(camera_uniform_buffer->get_uniform_ptr())[1] = project;
         auto planes = static_cast<glm::vec4 *>(camera_uniform_buffer->get_uniform_ptr()) + 8;
         // Left
@@ -50,7 +50,12 @@ namespace MatchEngine {
         }
     }
 
-    SceneSwapData::~SceneSwapData() {
+    void SwapData::clear() {
+        mesh_instance_pool->clear();
+        memset(camera_uniform_buffer->get_uniform_ptr(), 0, camera_uniform_buffer->size);
+    }
+
+    SwapData::~SwapData() {
         camera_uniform_buffer.reset();
         mesh_instance_pool.reset();
     }

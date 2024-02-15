@@ -16,10 +16,6 @@ namespace MatchEngine {
         void fixedTick();
         void tick(float dt);
         void swap();
-
-        std::string getActiveSceneName() const  { return active_scene->getSceneName(); }
-    private:
-        void setActiveScene(Game::Scene *scene);
     MATCHEDITOR_VISIBLE:
         std::map<std::string, Game::Scene *> scenes;
         Game::Scene *active_scene { nullptr };

@@ -4,7 +4,7 @@
 
 namespace MatchEngine::Game {
     void MeshComponent::onStart() {
-        auto mesh_instance_pool = global_runtime_context->render_system->getActiveSceneRenderer()->getSwapData()->getMeshInstancePool();
+        auto mesh_instance_pool = global_runtime_context->render_system->getSwapData()->getMeshInstancePool();
         auto transform_component = master->queryComponent<TransformComponent>();
         if (transform_component != nullptr) {
             auto idx = mesh_instance_pool->createMeshInstance({
@@ -14,7 +14,7 @@ namespace MatchEngine::Game {
                 .mesh_id = mesh_id,
             });
             transform_component->registerMemberUpdateCallback([transform_component, idx](Component *component) {
-                auto ptr = global_runtime_context->render_system->getActiveSceneRenderer()->getSwapData()->getMeshInstancePool()->getMeshInstancePtr(idx);
+                auto ptr = global_runtime_context->render_system->getSwapData()->getMeshInstancePool()->getMeshInstancePtr(idx);
                 ptr->location = transform_component->location;
                 ptr->rotation = transform_component->rotation;
                 ptr->scale = transform_component->scale;

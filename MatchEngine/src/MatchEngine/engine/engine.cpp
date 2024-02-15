@@ -91,6 +91,7 @@ namespace MatchEngine {
             return false;
         }
 
+        global_runtime_context->render_system->createRenderResource();
         return true;
     }
 

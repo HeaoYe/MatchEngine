@@ -7,8 +7,7 @@ namespace MatchEditor {
     class SceneUINode : public UINode {
     public:
         SceneUINode();
-        void preSceneRendererStart() override;
-        void onUnloadScene() override;
+        ~SceneUINode();
         void render() override;
     private:
         std::shared_ptr<Match::Sampler> sampler;

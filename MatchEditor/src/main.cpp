@@ -7,10 +7,9 @@ int main() {
 
     // 创建并初始化游戏引擎
     auto engine = new MatchEngine::MatchEngine();
-    engine->initialize();
-
     // 在游戏引擎初始化后，创建游戏引擎编辑器
     auto editor = new MatchEditor::MatchEditor(engine);
+    engine->initialize();
 
     // 创建场景
     auto scene = scene_manager->createScene("My First Scene");
