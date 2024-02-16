@@ -436,11 +436,11 @@ namespace MatchEngine::Renderer {
 
         command_buffer.end();
         vk::SubmitInfo submit_info {};
-        submit_info.setCommandBuffers(command_buffer)
+        submit_info.setCommandBuffers(resource.culling_command_buffers.at(renderer->current_in_flight))
             .setSignalSemaphores(resource.culling_finish_semaphores.at(renderer->current_in_flight));
-        resource.current_in_flight_wait_semaphore.push_back(resource.culling_finish_semaphores.at(renderer->current_in_flight));
-        resource.current_in_flight_wait_stages.push_back(vk::PipelineStageFlagBits::eComputeShader);
+        resource.in_flight_wait_semaphore[renderer->current_in_flight].push_back(resource.culling_finish_semaphores.at(renderer->current_in_flight));
+        resource.in_flight_wait_stages[renderer->current_in_flight].push_back(vk::PipelineStageFlagBits::eDrawIndirect);
 
-        global_runtime_context->render_system->getMatchAPIManager()->device->compute_queue.submit(submit_info);
+        renderer->report_submit_info(submit_info);
     }
 }

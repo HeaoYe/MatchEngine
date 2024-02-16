@@ -9,11 +9,11 @@ namespace MatchEngine {
         max_vertex_count = vertex_memory_size / sizeof(glm::vec3);
         max_index_count = index_memory_size / sizeof(uint32_t);
 
-        position_buffer = factory->create_vertex_buffer(sizeof(glm::vec3), max_vertex_count);
-        normal_buffer = factory->create_vertex_buffer(sizeof(glm::vec3), max_vertex_count);
-        tex_coord_buffer = factory->create_vertex_buffer(sizeof(glm::vec2), max_vertex_count);
-        color_buffer = factory->create_vertex_buffer(sizeof(glm::vec3), max_vertex_count);
-        index_buffer = factory->create_index_buffer(Match::IndexType::eUint32, max_index_count);
+        position_buffer = factory->create_vertex_buffer(sizeof(glm::vec3), max_vertex_count, vk::BufferUsageFlagBits::eStorageBuffer);
+        normal_buffer = factory->create_vertex_buffer(sizeof(glm::vec3), max_vertex_count, vk::BufferUsageFlagBits::eStorageBuffer);
+        tex_coord_buffer = factory->create_vertex_buffer(sizeof(glm::vec2), max_vertex_count, vk::BufferUsageFlagBits::eStorageBuffer);
+        color_buffer = factory->create_vertex_buffer(sizeof(glm::vec3), max_vertex_count, vk::BufferUsageFlagBits::eStorageBuffer);
+        index_buffer = factory->create_index_buffer(Match::IndexType::eUint32, max_index_count, vk::BufferUsageFlagBits::eStorageBuffer);
 
         current_primitive_discriptor_count = 0;
         primitive_descriptor_buffer = std::make_shared<Match::Buffer>(sizeof(PrimitiveDescriptor) * max_primitive_count, vk::BufferUsageFlagBits::eStorageBuffer, VMA_MEMORY_USAGE_CPU_TO_GPU, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);

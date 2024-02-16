@@ -88,3 +88,15 @@
     4.支持固定裁剪相机
 
     5.支持垂直同步
+
+本期大纲
+
+    1.使用 Visibility Buffer
+
+    2.性能情况，使用Nsight分析性能
+    // 因为编辑器对性能有影响，暂时关掉
+    // (1) 创建Hierarchical Z-Buffer花费50微秒
+    // (2) 收集并剔除所有实例，花费27微秒
+    // (3) 四次DrawCall，绘制不同Lod的模型到DepthBuffer和VisibilityBuffer，花费3微秒
+    // (4) 根据VisibilityBuffer，上色，花费7微秒
+    // (5) 共计90微秒

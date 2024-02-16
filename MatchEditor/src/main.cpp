@@ -8,7 +8,7 @@ int main() {
 
     // 创建并初始化游戏引擎
     auto engine = new MatchEngine::MatchEngine();
-    // 在游戏引擎初始化后，创建游戏引擎编辑器
+    // 在游戏引擎创建后，初始化前，创建游戏引擎编辑器
     auto editor = new MatchEditor::MatchEditor(engine);
     engine->initialize();
 
@@ -29,7 +29,8 @@ int main() {
     assets_system->setRootDir("Sandbox/resource");
     // auto dragon_mesh_id = assets_system->loadMesh("dragon_lods.obj", { "dragon_LOD5" });
     auto dragon_mesh_id = assets_system->loadMesh("dragon_lods.obj");
-    int n = 24, n2 = n / 2;
+    int n = 16, n2 = n / 2;
+    // int n = 8, n2 = n / 2;
     for (int i = 0; i < n * n * n; i ++) {
         auto dragon = scene->createGameObject("龙_" + std::to_string(i));
         auto t = new MatchEngine::Game::TransformComponent();

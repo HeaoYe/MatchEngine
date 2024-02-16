@@ -12,10 +12,7 @@ namespace MatchEngine {
     void SwapData::setCameraFixed(bool fixed) {
         camera_fixed = fixed;
         if (!camera_fixed) {
-            static_cast<glm::mat4 *>(camera_uniform_buffer->get_uniform_ptr())[0] = static_cast<glm::mat4 *>(scene_camera_uniform_buffer->get_uniform_ptr())[0];
-            static_cast<glm::mat4 *>(camera_uniform_buffer->get_uniform_ptr())[1] = static_cast<glm::mat4 *>(scene_camera_uniform_buffer->get_uniform_ptr())[1];
-            static_cast<float *>(camera_uniform_buffer->get_uniform_ptr())[32] = static_cast<float *>(scene_camera_uniform_buffer->get_uniform_ptr())[32];
-            static_cast<float *>(camera_uniform_buffer->get_uniform_ptr())[33] = static_cast<float *>(scene_camera_uniform_buffer->get_uniform_ptr())[33];
+            memcpy(camera_uniform_buffer->get_uniform_ptr(), scene_camera_uniform_buffer->get_uniform_ptr(), camera_uniform_buffer->size);
         }
     }
 

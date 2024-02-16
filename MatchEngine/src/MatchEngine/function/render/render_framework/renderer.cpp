@@ -1,5 +1,6 @@
 #include <MatchEngine/function/render/render_framework/renderer.hpp>
 #include <MatchEngine/function/render/render_framework/culling_pass.hpp>
+#include <MatchEngine/function/render/render_framework/visibility_pass.hpp>
 #include <MatchEngine/function/render/render_framework/mesh_pass.hpp>
 #include "internal.hpp"
 
@@ -10,8 +11,11 @@ namespace MatchEngine::Renderer {
             builder->add_attachment(output_attachment_name, Match::AttachmentType::eColorBuffer);
         }
         resource = std::make_unique<Resource>();
+        resource->in_flight_wait_stages.resize(Match::setting.max_in_flight_frame);
+        resource->in_flight_wait_semaphore.resize(Match::setting.max_in_flight_frame);
 
         subpasses.push_back(std::make_unique<CullingPass>());
+        subpasses.push_back(std::make_unique<VisibilityPass>());
         subpasses.push_back(std::make_unique<MeshPass>());
 
         for (auto &subpass : subpasses) {
@@ -64,8 +68,8 @@ namespace MatchEngine::Renderer {
         for (auto &subpass : subpasses) {
             subpass->executePostRenderPass(renderer, *resource);
         }
-        renderer->present(resource->current_in_flight_wait_stages, resource->current_in_flight_wait_semaphore);
-        resource->current_in_flight_wait_stages.clear();
-        resource->current_in_flight_wait_semaphore.clear();
+        renderer->present(resource->in_flight_wait_stages[renderer->current_in_flight], resource->in_flight_wait_semaphore[renderer->current_in_flight]);
+        resource->in_flight_wait_stages[renderer->current_in_flight].clear();
+        resource->in_flight_wait_semaphore[renderer->current_in_flight].clear();
     }
 }

@@ -12,8 +12,8 @@ namespace MatchEngine::Renderer {
         // ------------
         
         // Renderer 渲染器同步参数
-        std::vector<vk::PipelineStageFlags> current_in_flight_wait_stages;
-        std::vector<vk::Semaphore> current_in_flight_wait_semaphore;
+        std::vector<std::vector<vk::PipelineStageFlags>> in_flight_wait_stages;
+        std::vector<std::vector<vk::Semaphore>> in_flight_wait_semaphore;
         // ------------
 
         // CullingPass 剔除管线资源
