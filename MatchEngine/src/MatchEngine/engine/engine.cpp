@@ -14,6 +14,7 @@ namespace MatchEngine {
             return false;
         }
         global_runtime_context = new RuntimeContext();
+        global_runtime_context->editor_mode = editor_mode;
 
         // 加载反射系统
         global_runtime_context->reflect_system.initialize();
@@ -160,18 +161,26 @@ namespace MatchEngine {
             }
         });
 
+        auto benchmark = global_runtime_context->timer_system->createTimer();
+        volatile float benchmark_dt = benchmark->tick();
         // 不限频率的主游戏循环更新
         float dt = 0.03;
         while (global_runtime_context->window_system->isAlive()) {
             global_runtime_context->window_system->pollEvents();
 
+            benchmark->tick();
             if (!main_loop_timer->is_suspended()) {
                 global_runtime_context->scene_manager->tick(dt);
             }
+            benchmark_dt = benchmark->tick();
+            // MCH_CORE_INFO("BENCHMARK: Logic Delta Time(ms): {}", benchmark_dt * 1000);
 
             global_runtime_context->input_system->swapState();
 
+            benchmark->tick();
             global_runtime_context->render_system->render();
+            benchmark_dt = benchmark->tick();
+            // MCH_CORE_INFO("BENCHMARK: Render CPU Delta Time(ms): {}", benchmark_dt * 1000);
             
             if (!main_loop_timer->is_suspended()) {
                 global_runtime_context->scene_manager->swap();

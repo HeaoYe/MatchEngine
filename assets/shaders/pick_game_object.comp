@@ -1,0 +1,25 @@
+#version 450
+
+layout (binding = 0, rg32ui) uniform uimage2D visibility_buffer;
+
+layout (std430, binding = 1) readonly buffer InstanceData {
+    vec4 instance_datas[];
+};
+
+layout (std430, binding = 2) writeonly buffer ResultBuffer {
+    uint result;
+};
+
+layout (push_constant) uniform Constants {
+    uvec2 pos;
+};
+
+layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+void main() {
+    uvec2 info = imageLoad(visibility_buffer, ivec2(pos)).xy;
+    if (info.x + info.y == 0) {
+        result = uint(-1);
+        return;
+    }
+    result = uint(instance_datas[info.x * 3].w);
+}

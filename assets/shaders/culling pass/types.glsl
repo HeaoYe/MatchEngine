@@ -31,6 +31,7 @@ layout (push_constant) uniform Constants {
     uint mesh_instance_count;
     uint primitive_count;
     uvec2 depth_texture_size;
+    uint selected_mesh_instance_index;
 };
 
 layout (std430, binding = 0, set = 1) readonly buffer MeshInstanceBuffer {
@@ -50,5 +51,4 @@ layout (binding = 3, set = 1) uniform Camera {
     mat4 project;
     float near;
     float far;
-    // vec4 planes[6];
 } camera;

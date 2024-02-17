@@ -17,6 +17,7 @@
 namespace MatchEngine {
     // 管理全部运行时系统
     struct RuntimeContext {
+        bool editor_mode;
         Singleton<ReflectSystem> reflect_system;
         Singleton<LoggerSystem> logger_system;
         Singleton<WindowSystem> window_system;
@@ -29,8 +30,4 @@ namespace MatchEngine {
         Singleton<RenderSystem> render_system;
         Singleton<AssetSystem> assets_system;
     };
-
-    namespace Renderer {
-        extern std::string output_attachment_name;
-    }
 }

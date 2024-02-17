@@ -1,4 +1,5 @@
 mat3 compute_model(vec3 scale, vec3 rotation) {
+    rotation *= 0.01745329252;  // degrees to radians
     float sin_v = sin(rotation.x), cos_v = cos(rotation.x);
     mat3 rotate_x = mat3(
         cos_v, sin_v, 0,

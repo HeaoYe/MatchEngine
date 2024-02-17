@@ -24,6 +24,13 @@ layout (std430, binding = 5) writeonly buffer InstanceData {
     vec4 instance_datas[];
 };
 
+layout (std430, binding = 7) writeonly buffer OutliningBuffer {
+    vec4 location;
+    vec4 rotation;
+    vec4 scale;
+    VkDrawIndexedIndirectCommand indirect_command;
+} outlining;
+
 // 5.将所有可见的MeshInstance的数据按照批次储存在一起
 layout (local_size_x = 256, local_size_y = 1, local_size_z = 1) in;
 void main() {
@@ -37,7 +44,15 @@ void main() {
     uint mesh_id = mesh_instance.mesh_id;
     uint primitive_index = mesh_descriptors[mesh_id].lods[instance_info.y];
     uint offset = 3 * (indirect_commands[primitive_index].first_instance + atomicAdd(indirect_commands[primitive_index].instance_count, 1));
-    instance_datas[offset + 0] = vec4(mesh_instance.location, 0);
+    instance_datas[offset + 0] = vec4(mesh_instance.location, instance_info.x);
     instance_datas[offset + 1] = vec4(mesh_instance.rotation, 0);
     instance_datas[offset + 2] = vec4(mesh_instance.scale, 0);
+    if (instance_info.x == selected_mesh_instance_index) {
+        outlining.location = vec4(mesh_instance.location, 0);
+        outlining.rotation = vec4(mesh_instance.rotation, 0);
+        outlining.scale = vec4(mesh_instance.scale, 0);
+        outlining.indirect_command = indirect_commands[primitive_index];
+        outlining.indirect_command.first_instance = 0;
+        outlining.indirect_command.instance_count = 1;
+    }
 }

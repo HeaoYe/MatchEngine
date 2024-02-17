@@ -3,7 +3,7 @@
 
 namespace MatchEngine::Renderer {
     void VisibilityPass::createRenderResource(Match::RenderPassBuilder &builder) {
-        builder.add_attachment("visibility buffer", Match::AttachmentType::eUint64Buffer);
+        builder.add_attachment("visibility buffer", Match::AttachmentType::eUint64Buffer, vk::ImageUsageFlagBits::eStorage);
     }
 
     void VisibilityPass::buildPassDescriptor(Match::SubpassBuilder &builder) {

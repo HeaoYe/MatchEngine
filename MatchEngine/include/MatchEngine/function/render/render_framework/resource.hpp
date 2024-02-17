@@ -32,5 +32,10 @@ namespace MatchEngine::Renderer {
         std::vector<vk::CommandBuffer> culling_command_buffers;
         std::vector<vk::Semaphore> culling_finish_semaphores;
         // ------------
+
+        // OutliningPass
+        uint32_t selected_mesh_instance_index;
+        std::shared_ptr<Match::InFlightBuffer> outlining_buffer;
+        // ------------
     };
 }

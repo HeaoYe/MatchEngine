@@ -20,7 +20,7 @@ namespace MatchEditor {
 
         auto renderer = MatchEngine::global_runtime_context->render_system->getRenderer();
         renderer->subpasses.push_back(std::make_unique<ImGuiPass>(this));
-        renderer->renderer->attach_render_layer<Match::ImGuiLayer>("ImGui Layer", std::vector { MatchEngine::Renderer::output_attachment_name });
+        renderer->renderer->attach_render_layer<Match::ImGuiLayer>("ImGui Layer", std::vector { MatchEngine::global_runtime_context->render_system->getOutputAttachmentName() });
         ImGui::LoadIniSettingsFromDisk("assets/ui/imgui.ini");
         ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 

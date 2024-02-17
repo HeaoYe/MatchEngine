@@ -9,7 +9,5 @@ namespace MatchEditor {
         void onLoadScene() override;
         void onUnloadScene() override;
         void render() override;
-    private:
-        std::map<MatchEngine::Game::GameObjectUUID, bool> is_selected;
     };
 }

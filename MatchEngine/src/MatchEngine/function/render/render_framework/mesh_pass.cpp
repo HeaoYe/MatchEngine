@@ -4,7 +4,7 @@
 namespace MatchEngine::Renderer {
     void MeshPass::buildPassDescriptor(Match::SubpassBuilder &builder) {
         builder.attach_input_attachment("visibility buffer")
-            .attach_output_attachment(output_attachment_name)
+            .attach_output_attachment(global_runtime_context->render_system->output_attachment_name)
             .wait_for(
                 "visibility pass",
                 {

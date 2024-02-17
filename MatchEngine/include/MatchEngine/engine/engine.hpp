@@ -11,5 +11,7 @@ namespace MatchEngine {
         void gameLoop();
     private:
         bool checkRuntimeSystem(const RuntimeSystem *system);
+    MATCHEDITOR_VISIBLE:
+        bool editor_mode { false };  // set by MatchEditor
     };
 }

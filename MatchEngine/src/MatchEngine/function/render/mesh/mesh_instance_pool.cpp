@@ -10,15 +10,16 @@ namespace MatchEngine {
         mesh_instance_buffer.reset();
     }
 
-    uint32_t MeshInstancePool::createMeshInstance(const MeshInstance &mesh_instance) {
+    void MeshInstancePool::createMeshInstance(const MeshInstance &mesh_instance, Game::GameObjectUUID uuid) {
         *mesh_instance_buffer_ptr = mesh_instance;
         mesh_instance_buffer_ptr ++;
         current_instance_count ++;
-        return current_instance_count - 1;
+        game_object_uuid_to_mesh_instance_index_map.insert(std::make_pair(uuid, current_instance_count - 1));
+        mesh_instance_index_to_game_object_uuid_map.insert(std::make_pair(current_instance_count - 1, uuid));
     }
 
-    MeshInstance *MeshInstancePool::getMeshInstancePtr(uint32_t mesh_instance_index) {
-        return static_cast<MeshInstance *>(mesh_instance_buffer->map()) + mesh_instance_index;
+    MeshInstance *MeshInstancePool::getMeshInstancePtr(Game::GameObjectUUID uuid) {
+        return static_cast<MeshInstance *>(mesh_instance_buffer->map()) + game_object_uuid_to_mesh_instance_index_map.at(uuid);
     }
  
     void MeshInstancePool::clear() {

@@ -3,7 +3,7 @@
 
 namespace MatchEngine::Renderer {
     void CullingPass::createRenderResource(Match::RenderPassBuilder &builder) {
-        builder.add_attachment("depth", Match::AttachmentType::eDepthBuffer);
+        builder.add_attachment("depth", Match::AttachmentType::eStencilBuffer);
     }
 
     void CullingPass::postCreateRenderResource(std::shared_ptr<Match::Renderer> renderer, Resource &resource) {
@@ -35,7 +35,7 @@ namespace MatchEngine::Renderer {
             .setOldLayout(vk::ImageLayout::eUndefined)
             .setNewLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal)
             .setSubresourceRange({
-                vk::ImageAspectFlagBits::eDepth | (Match::has_stencil_component(Match::get_supported_depth_format()) ? vk::ImageAspectFlagBits::eStencil : vk::ImageAspectFlagBits::eNone) ,
+                vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil ,
                 0,
                 1,
                 0,
@@ -66,7 +66,7 @@ namespace MatchEngine::Renderer {
                 .setOldLayout(vk::ImageLayout::eUndefined)
                 .setNewLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal)
                 .setSubresourceRange({
-                    vk::ImageAspectFlagBits::eDepth | (Match::has_stencil_component(Match::get_supported_depth_format()) ? vk::ImageAspectFlagBits::eStencil : vk::ImageAspectFlagBits::eNone) ,
+                    vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil ,
                     0,
                     1,
                     0,
@@ -166,6 +166,8 @@ namespace MatchEngine::Renderer {
         resource.indirect_commands_buffer = std::make_shared<Match::InFlightBuffer>(sizeof(vk::DrawIndexedIndirectCommand) * max_primitive_count, vk::BufferUsageFlagBits::eStorageBuffer, VMA_MEMORY_USAGE_GPU_ONLY, VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT);
         resource.available_indirect_commands_buffer = std::make_shared<Match::InFlightBuffer>(resource.indirect_commands_buffer->get_size(), vk::BufferUsageFlagBits::eIndirectBuffer | vk::BufferUsageFlagBits::eStorageBuffer, VMA_MEMORY_USAGE_GPU_ONLY, VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT);
         resource.instance_datas_buffer = std::make_shared<Match::InFlightBuffer>(sizeof(glm::vec4) * 3 * max_mesh_instance_count, vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eStorageBuffer, VMA_MEMORY_USAGE_GPU_ONLY, VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT);
+        resource.outlining_buffer = std::make_shared<Match::InFlightBuffer>(sizeof(glm::vec4) * 3 + sizeof(vk::DrawIndexedIndirectCommand), vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eIndirectBuffer | vk::BufferUsageFlagBits::eStorageBuffer, VMA_MEMORY_USAGE_GPU_ONLY, VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT);
+        resource.selected_mesh_instance_index = uint32_t(-1);
 
         resource.culling_command_buffers = manager->command_pool->allocate_command_buffer(Match::setting.max_in_flight_frame);
 
@@ -201,13 +203,15 @@ namespace MatchEngine::Renderer {
             { Match::ShaderStage::eCompute, 4, Match::DescriptorType::eStorageBuffer },
             { Match::ShaderStage::eCompute, 5, Match::DescriptorType::eStorageBuffer },
             { Match::ShaderStage::eCompute, 6, Match::DescriptorType::eTexture },
+            { Match::ShaderStage::eCompute, 7, Match::DescriptorType::eStorageBuffer },
         }).allocate()
             .bind_storage_buffer(0, resource.counts_buffer)
             .bind_storage_buffer(1, resource.visible_mesh_instance_indices_buffer)
             .bind_storage_buffer(2, resource.primitive_counts_buffer)
             .bind_storage_buffer(3, resource.indirect_commands_buffer)
             .bind_storage_buffer(4, resource.available_indirect_commands_buffer)
-            .bind_storage_buffer(5, resource.instance_datas_buffer);
+            .bind_storage_buffer(5, resource.instance_datas_buffer)
+            .bind_storage_buffer(7, resource.outlining_buffer);
         for (size_t in_flight_index = 0; in_flight_index < Match::setting.max_in_flight_frame; in_flight_index ++) {
             vk::DescriptorImageInfo image_info {};
             image_info.setImageLayout(vk::ImageLayout::eGeneral)
@@ -228,6 +232,7 @@ namespace MatchEngine::Renderer {
                 { "mesh_instance_count", Match::ConstantType::eUint32 },
                 { "primitive_count", Match::ConstantType::eUint32 },
                 { "depth_texture_size", Match::ConstantType::eUint32x2 },
+                { "selected_mesh_instance_index", Match::ConstantType::eUint32 },
             }
         );
         glm::uvec2 size = { width, height };
@@ -271,6 +276,7 @@ namespace MatchEngine::Renderer {
     void CullingPass::executePreRenderPass(std::shared_ptr<Match::Renderer> renderer, Resource &resource) {
         // 执行剔除工作
 
+        constants->push_constant("selected_mesh_instance_index", resource.selected_mesh_instance_index);
         auto command_buffer = resource.culling_command_buffers.at(renderer->current_in_flight);
         command_buffer.reset();
         vk::CommandBufferBeginInfo begin_info {};
@@ -290,7 +296,7 @@ namespace MatchEngine::Renderer {
             .setOldLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal)
             .setNewLayout(vk::ImageLayout::eShaderReadOnlyOptimal)
             .setSubresourceRange({
-                vk::ImageAspectFlagBits::eDepth | (Match::has_stencil_component(Match::get_supported_depth_format()) ? vk::ImageAspectFlagBits::eStencil : vk::ImageAspectFlagBits::eNone) ,
+                vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil ,
                 0,
                 1,
                 0,
@@ -433,6 +439,9 @@ namespace MatchEngine::Renderer {
         // 6.生成最终的IndirectCommand, 从模板IndirectCommand中剔除不绘制任何实例的IndirectCommand
         command_buffer.bindPipeline(vk::PipelineBindPoint::eCompute, generate_available_indirect_command_shader_program->pipeline);
         command_buffer.dispatch(std::ceil(primitive_count / 256.0), 1, 1);
+
+        vk::Event e;
+        // command_buffer.setEvent(, vk::PipelineStageFlags stageMask)
 
         command_buffer.end();
         vk::SubmitInfo submit_info {};

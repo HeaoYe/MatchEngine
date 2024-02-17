@@ -129,7 +129,7 @@ void main() {
     }
     res *= 1 - uint(step(scene_z, z_min));
     
-    if (res == 0) {
+    if ((res == 0) && (mesh_instance_index != selected_mesh_instance_index)) {
         // 被剔除直接返回
         return;
     }

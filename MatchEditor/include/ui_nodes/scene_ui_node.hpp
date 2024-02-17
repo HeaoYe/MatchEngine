@@ -15,5 +15,6 @@ namespace MatchEditor {
         uint32_t callback_id;
         bool scene_focus;
         bool scene_hover;
+        ImVec2 cursor_screen_pos, frame_extent;
     };
 }

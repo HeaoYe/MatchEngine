@@ -3,7 +3,7 @@
 
 namespace MatchEditor {
     MatchEditor::MatchEditor(MatchEngine::MatchEngine *engine) {
-        MatchEngine::Renderer::output_attachment_name = "RenderOutput";
+        engine->editor_mode = true;
     }
 
     void MatchEditor::initialize() {
