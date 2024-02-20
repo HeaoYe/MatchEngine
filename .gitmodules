@@ -1,3 +1,6 @@
 [submodule "thirdparty/Match"]
 	path = thirdparty/Match
 	url = https://github.com/HeaoYe/Match
+[submodule "thirdparty/ImGuizmo/ImGuizmo"]
+	path = thirdparty/ImGuizmo/ImGuizmo
+	url = https://github.com/CedricGuillemet/ImGuizmo
