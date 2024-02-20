@@ -9,7 +9,7 @@ namespace MatchEngine::Game {
     class MeshComponent : public Component {
         DECLARE_COMPONENT_CUSTOM_CONSTRUCTION(MeshComponent)
     private:
-        void onStart() override;
+        void onCreate() override;
     public:
         MeshComponent(MeshID mesh_id) : mesh_id(mesh_id) {}
         MeshID mesh_id;

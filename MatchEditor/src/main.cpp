@@ -27,8 +27,10 @@ int main() {
     std::uniform_real_distribution<float> random_scale(0.7, 1.8);
     // 加载龙
     assets_system->setRootDir("Sandbox/resource");
-    auto dragon_mesh_id = assets_system->loadMesh("dragon_lods.obj", { "dragon_LOD5" });
-    // auto dragon_mesh_id = assets_system->loadMesh("dragon_lods.obj");
+    // 使用低模
+    // auto dragon_mesh_id = assets_system->loadMesh("dragon_lods.obj", { "dragon_LOD5" });
+    // 使用高模+LOD
+    auto dragon_mesh_id = assets_system->loadMesh("dragon_lods.obj");
     int n = 16, n2 = n / 2;
     // int n = 8, n2 = n / 2;
     for (int i = 0; i < n * n * n; i ++) {
@@ -44,7 +46,8 @@ int main() {
     editor->initialize();
 
     // 游戏主循环
-    engine->gameLoop();
+    // 有editor开始游戏主循环
+    editor->gameLoop();
 
     // 在游戏引擎销毁前，销毁游戏引擎编辑器
     editor->destroy();

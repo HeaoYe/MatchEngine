@@ -42,7 +42,7 @@ namespace MatchEngine::Renderer {
                 .address_mode_v = Match::SamplerAddressMode::eClampToEdge,
                 .address_mode_w = Match::SamplerAddressMode::eClampToEdge,
             }))
-            .bind_uniform(1, global_runtime_context->render_system->getSwapData()->getSceneCameraUniformBuffer())
+            .bind_uniform(1, global_runtime_context->camera_system->getViewportCamera())
             .bind_storage_buffer(2, global_runtime_context->assets_system->getMeshPool()->index_buffer)
             .bind_storage_buffer(3, global_runtime_context->assets_system->getMeshPool()->position_buffer)
             .bind_storage_buffer(4, global_runtime_context->assets_system->getMeshPool()->normal_buffer)

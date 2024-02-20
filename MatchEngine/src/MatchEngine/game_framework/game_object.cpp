@@ -16,6 +16,12 @@ namespace MatchEngine::Game {
         component_map.clear();
     }
 
+    void GameObject::awake() {
+        for (auto *component : components) {
+            component->onAwake();
+        }
+    }
+
     void GameObject::start() {
         for (auto *component : components) {
             component->onStart();
@@ -50,6 +56,7 @@ namespace MatchEngine::Game {
         component->setupRTTI();
         component_map.insert(std::make_pair(component->getTypeUUID(), component));
         components.push_back(component);
+        component->onCreate();
     }
 
     void GameObject::removeComponent(Component *component) {

@@ -2,15 +2,12 @@
 #include "internal.hpp"
 
 namespace MatchEngine::Game {
-    void CameraComponent::uploadViewMatrix() {
-        global_runtime_context->render_system->getSwapData()->uploadCameraViewMatrix(view);
+    CameraComponent::CameraComponent() {
+        camera_id = global_runtime_context->camera_system->allocateCamera();
     }
 
-    void CameraComponent::uploadProjectMatrix() {
-        global_runtime_context->render_system->getSwapData()->uploadCameraProjectMatrix(project);
-    }
-
-    void CameraComponent::uploadNearFar() {
-        global_runtime_context->render_system->getSwapData()->uploadCameraNearFar(near, far);
+    CameraComponent::~CameraComponent() {
+        global_runtime_context->camera_system->removeCamera(camera_id);
+        camera_id = 0;
     }
 }

@@ -3,7 +3,7 @@
 #include "internal.hpp"
 
 namespace MatchEngine::Game {
-    void MeshComponent::onStart() {
+    void MeshComponent::onCreate() {
         auto mesh_instance_pool = global_runtime_context->render_system->getSwapData()->getMeshInstancePool();
         auto transform_component = master->queryComponent<TransformComponent>();
         if (transform_component != nullptr) {

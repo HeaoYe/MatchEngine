@@ -50,6 +50,10 @@ uint cull_lrtb(vec3 ndc) {
     return res;
 }
 
+uint is_skybox(vec3 mn, vec3 mx) {
+    return uint(step(dot(mn, mx), 0));
+}
+
 // 3.遍历所有MeshInstance, 将所有不被剔除的实例收集起来
 layout (local_size_x = 256, local_size_y = 1, local_size_z = 1) in;
 void main() {
@@ -76,12 +80,16 @@ void main() {
 
     vec2 ndc_min = vec2(1);
     vec2 ndc_max = vec2(-1);
+    vec3 view_pos_min = vec3(100000000);
+    vec3 view_pos_max = vec3(-100000000);
     float z_min = 1;
     mat3 model = compute_model(mesh_instance.scale, mesh_instance.rotation);
 
     uint res = 0;
     for (int i = 0; i < 8; i ++) {
         vec4 view_pos = camera.view * vec4(mesh_instance.location + model * corners[i], 1);
+        view_pos_min = min(view_pos_min, view_pos.xyz);
+        view_pos_max = max(view_pos_max, view_pos.xyz);
         uint nf_res = cull_near_far(view_pos.z);
 
         vec4 clip_pos = camera.project * view_pos;
@@ -100,6 +108,7 @@ void main() {
 
         res = max(res, nf_res * lrtb_res);
     }
+    res = max(res, is_skybox(view_pos_min, view_pos_max));
 
     // 遮挡剔除
     vec2 viewport = vec2(depth_texture_size);

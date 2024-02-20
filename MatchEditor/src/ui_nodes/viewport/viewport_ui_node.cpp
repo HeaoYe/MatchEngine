@@ -1,17 +1,22 @@
-#include <ui_nodes/scene_ui_node.hpp>
+#include <ui_nodes/viewport/viewport_ui_node.hpp>
 #include <backends/imgui_impl_vulkan.h>
+#include <MatchEngine/game_framework/component/camera/perspective_camera_component.hpp>
+#include <MatchEngine/game_framework/component/transform/transform_component.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 namespace MatchEditor {
-    SceneUINode::SceneUINode() {
+    ViewportUINode::ViewportUINode() {
         sampler = MatchEngine::global_runtime_context->render_system->getMatchFactory()->create_sampler();
-        scene_focus = false;
-        scene_hover = false;
+        viewport_focus = false;
+        viewport_hover = false;
+        on_select_game_object_callback = [](MatchEngine::Game::GameObjectUUID uuid) {};
+        camera = std::make_unique<ViewportCamera>();
 
         MatchEngine::global_runtime_context->event_system->attachEventLayer(100, "ImGui Event Block");
         MatchEngine::global_runtime_context->event_system->addEventListener<MatchEngine::KeyPressedEvent>([&](auto &event) {
-            return (!scene_focus) && (!scene_hover);
+            return (!viewport_focus) && (!viewport_hover);
         }, "ImGui Event Block");
-        MatchEngine::global_runtime_context->event_system->addEventListener<MatchEngine::MousePressedEvent>([&](auto &event) {
+        MatchEngine::global_runtime_context->event_system->addEventListener<MatchEngine::MousePressedEvent>([this](auto &event) {
             if (event.button == MatchEngine::MouseButton::eMiddle) {
                 auto x = MatchEngine::global_runtime_context->input_system->getMousePosX() - cursor_screen_pos.x;
                 auto y = MatchEngine::global_runtime_context->input_system->getMousePosY() - cursor_screen_pos.y;
@@ -20,25 +25,20 @@ namespace MatchEditor {
                     float y_factor = static_cast<float>(y) / static_cast<float>(frame_extent.y);
                     x = x_factor * Match::runtime_setting->window_size.width;
                     y = y_factor * Match::runtime_setting->window_size.height;
-                    MatchEngine::global_runtime_context->render_system->getRenderer()->pickGameObject(x, y, [](MatchEngine::Game::GameObjectUUID uuid) {
-                        global_ui_context->is_selected[global_ui_context->selected_game_object_uuid] = false;
-                        global_ui_context->is_selected[uuid] = true;
-                        global_ui_context->selected_game_object_uuid = uuid;
-                        MatchEngine::global_runtime_context->render_system->getRenderer()->reportSelectedGameObject(uuid);
-                    }, []() {
-                        global_ui_context->is_selected[global_ui_context->selected_game_object_uuid] = false;
-                        global_ui_context->selected_game_object_uuid = MatchEngine::Game::GameObjectUUID(-1);
-                        MatchEngine::global_runtime_context->render_system->getRenderer()->reportSelectedGameObject();
+                    MatchEngine::global_runtime_context->render_system->getRenderer()->pickGameObject(x, y, [this](MatchEngine::Game::GameObjectUUID uuid) {
+                        on_select_game_object_callback(uuid);
+                    }, [this]() {
+                        on_select_game_object_callback(MatchEngine::Game::GameObjectUUID(-1));
                     });
                 }
             }
-            return (!scene_focus) && (!scene_hover);
+            return (!viewport_focus) && (!viewport_hover);
         }, "ImGui Event Block");
         MatchEngine::global_runtime_context->event_system->addEventListener<MatchEngine::MouseMovedEvent>([&](auto &event) {
-            return (!scene_focus) && (!scene_hover);
+            return (!viewport_focus) && (!viewport_hover);
         }, "ImGui Event Block");
         MatchEngine::global_runtime_context->event_system->addEventListener<MatchEngine::MouseScrollEvent>([&](auto &event) {
-            return (!scene_focus) && (!scene_hover);
+            return (!viewport_focus) && (!viewport_hover);
         }, "ImGui Event Block");
 
         auto renderer = MatchEngine::global_runtime_context->render_system->getRenderer()->renderer;
@@ -67,7 +67,7 @@ namespace MatchEditor {
         renderer->callbacks.at(callback_id)();
     }
 
-    SceneUINode::~SceneUINode() {
+    ViewportUINode::~ViewportUINode() {
         auto renderer = MatchEngine::global_runtime_context->render_system->getRenderer()->renderer;
         renderer->remove_resource_recreate_callback(callback_id);
 
@@ -76,15 +76,45 @@ namespace MatchEditor {
         }
     }
 
-    void SceneUINode::render() {
-        ImGui::Begin("Scene");
-        scene_focus = ImGui::IsWindowFocused();
-        scene_hover = ImGui::IsWindowHovered();
+    void ViewportUINode::onLoadScene() {
+        camera->reset();
+        MatchEngine::global_runtime_context->camera_system->activeEditorCamera(global_ui_context->viewport_camera_id);
+    }
+
+    void ViewportUINode::onTick(float dt) {
+        camera->onTick(dt);
+    }
+
+    void ViewportUINode::render() {
+        ImGui::Begin("Viewport");
+        viewport_focus = ImGui::IsWindowFocused();
+        viewport_hover = ImGui::IsWindowHovered();
         cursor_screen_pos = ImGui::GetCursorScreenPos();
         frame_extent = ImGui::GetContentRegionAvail();
         // float expected_width = extent.y * camera->get_extent().x / camera->get_extent().y;
         // float pad = (expected_width - extent.x) / expected_width / 2.0f;
         ImGui::Image(in_flight_textures[Match::runtime_setting->current_in_flight], frame_extent);
+
+        if (global_ui_context->mode == Mode::eEdit) {
+            auto camera_data = MatchEngine::global_runtime_context->camera_system->quertyCameraData(global_ui_context->viewport_camera_id);
+            if (global_ui_context->selected_game_object_uuid != MatchEngine::Game::GameObjectUUID(-1)) {
+                auto *t = MatchEngine::global_runtime_context->scene_manager->active_scene->game_object_map.at(global_ui_context->selected_game_object_uuid)->queryComponent<MatchEngine::Game::TransformComponent>();
+                if (t != nullptr) {
+                    glm::mat4 mat;
+                    ImGuizmo::SetOrthographic(false);
+                    // ImGuizmo::set
+                    ImGuizmo::SetDrawlist();
+                    ImGuizmo::RecomposeMatrixFromComponents(glm::value_ptr(t->location), glm::value_ptr(t->rotation), glm::value_ptr(t->scale), glm::value_ptr(mat));
+                    ImGuizmo::SetRect(cursor_screen_pos.x, cursor_screen_pos.y, frame_extent.x, frame_extent.y);
+                    ImGuizmo::Manipulate(glm::value_ptr(camera_data->view), glm::value_ptr(camera_data->project), ImGuizmo::OPERATION::UNIVERSAL, ImGuizmo::MODE::WORLD, glm::value_ptr(mat));
+                    if (ImGuizmo::IsUsing()) {
+                        ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(mat), &t->location.x, &t->rotation.x, &t->scale.x);
+                        t->onMemberUpdate();
+                    }
+                }
+            }
+        }
+
         ImGui::End();
     }
 }

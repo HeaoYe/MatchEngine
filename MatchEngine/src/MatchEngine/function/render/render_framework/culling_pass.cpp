@@ -192,7 +192,7 @@ namespace MatchEngine::Renderer {
             .bind_storage_buffer(0, global_runtime_context->render_system->getSwapData()->getMeshInstancePool()->mesh_instance_buffer)
             .bind_storage_buffer(1, global_runtime_context->assets_system->getMeshPool()->mesh_descriptor_buffer)
             .bind_storage_buffer(2, global_runtime_context->assets_system->getMeshPool()->primitive_descriptor_buffer)
-            .bind_uniform(3, global_runtime_context->render_system->getSwapData()->getCameraUniformBuffer());
+            .bind_uniform(3, global_runtime_context->camera_system->getViewportCamera());
         
         descriptor_set = factory->create_descriptor_set();
         descriptor_set->add_descriptors({
@@ -303,7 +303,7 @@ namespace MatchEngine::Renderer {
                 1
             }); 
         command_buffer.pipelineBarrier(vk::PipelineStageFlagBits::eEarlyFragmentTests, vk::PipelineStageFlagBits::eComputeShader, {}, {}, {}, image_barrier);
-        if (!global_runtime_context->render_system->getSwapData()->isCameraFixed()) {
+        if (!global_runtime_context->camera_system->isFixedClip()) {
             command_buffer.dispatch(std::ceil(image_size.x / 16.0), std::ceil(image_size.y / 16.0), 1);
         }
         image_barrier.setSrcAccessMask(vk::AccessFlagBits::eShaderRead)

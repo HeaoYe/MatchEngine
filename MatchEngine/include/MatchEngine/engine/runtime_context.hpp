@@ -9,6 +9,7 @@
 #include <MatchEngine/function/timer/timer_system.hpp>
 #include <MatchEngine/function/game_framework/game_object_uuid_allocator.hpp>
 #include <MatchEngine/function/game_framework/component_type_uuid_system.hpp>
+#include <MatchEngine/function/camera/camera_system.hpp>
 #include <MatchEngine/function/game_framework/scene_manager.hpp>
 #include <MatchEngine/function/render/render_system.hpp>
 #include <MatchEngine/function/asset/asset_system.hpp>
@@ -26,6 +27,7 @@ namespace MatchEngine {
         Singleton<TimerSystem> timer_system;
         Singleton<GameObjectUUIDAllocator> game_object_uuid_allocator;
         Singleton<ComponentTypeUUIDSystem> component_type_uuid_system;
+        Singleton<CameraSystem> camera_system;
         Singleton<SceneManager> scene_manager;
         Singleton<RenderSystem> render_system;
         Singleton<AssetSystem> assets_system;

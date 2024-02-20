@@ -35,7 +35,7 @@ namespace MatchEngine {
     }
     
     void SceneManager::start() {
-        global_runtime_context->render_system->getSwapData()->clear();
+        active_scene->awake();
         active_scene->start();
     }
     
@@ -54,6 +54,7 @@ namespace MatchEngine {
         }
         active_scene = change_scene;
         change_scene = nullptr;
+        global_runtime_context->render_system->getSwapData()->clear();
         start();
     }
     

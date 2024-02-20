@@ -29,7 +29,7 @@ namespace MatchEngine::Renderer {
         descriptor_set->add_descriptors({
             { Match::ShaderStage::eVertex, 0, Match::DescriptorType::eUniform },
         }).allocate()
-            .bind_uniform(0, global_runtime_context->render_system->getSwapData()->getSceneCameraUniformBuffer());
+            .bind_uniform(0, global_runtime_context->camera_system->getViewportCamera());
 
         auto vert_shader = factory->compile_shader(getName() + "/shader.vert", Match::ShaderStage::eVertex);
         auto frag_shader = factory->compile_shader(getName() + "/shader.frag", Match::ShaderStage::eFragment);

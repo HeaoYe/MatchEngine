@@ -6,6 +6,7 @@
 #include <Match/vulkan/resource/shader_program.hpp>
 
 namespace MatchEngine::Renderer {
+    // GameObject拾取器, 根据上一帧的VisibilityBuffer, 获取对应位置上一帧的InstanceIndex, 然后一路找到GameObjectUUID
     class GameObjectPicker {
         NoCopyMoveConstruction(GameObjectPicker)
     private:

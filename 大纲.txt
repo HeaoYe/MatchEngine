@@ -100,3 +100,19 @@
     // (3) 四次DrawCall，绘制不同Lod的模型到DepthBuffer和VisibilityBuffer，花费3微秒
     // (4) 根据VisibilityBuffer，上色，花费7微秒
     // (5) 共计90微秒
+
+本期大纲
+
+    1.上期的性能测试有问题, (3)那步用的是drawIndexedIndirectCount, 他会产生4各SubDraw, 但是Nsight统计不到SubDraw的时间, 不知道是不是bug
+
+    2.相机系统
+
+    3.拾取GameObject
+
+    4.Play Game
+
+    5.UI系统
+
+    6.添加了Benchmark
+
+    7.开学了............

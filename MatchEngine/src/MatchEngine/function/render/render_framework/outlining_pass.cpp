@@ -32,7 +32,7 @@ namespace MatchEngine::Renderer {
         descriptor_set->add_descriptors({
             { Match::ShaderStage::eVertex , 0, Match::DescriptorType::eUniform },
         }).allocate()
-            .bind_uniform(0, global_runtime_context->render_system->getSwapData()->getSceneCameraUniformBuffer());
+            .bind_uniform(0, global_runtime_context->camera_system->getViewportCamera());
 
         stencil_shader_program = factory->create_shader_program(renderer, getName());
         stencil_shader_program->attach_vertex_shader(vert_shader)

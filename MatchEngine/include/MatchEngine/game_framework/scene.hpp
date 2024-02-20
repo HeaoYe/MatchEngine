@@ -11,6 +11,7 @@ namespace MatchEngine::Game {
         Scene(const std::string &name) : name(name) {}
         ~Scene();
 
+        void awake();
         void start();
         void fixedTick();
         void tick(float dt);

@@ -11,8 +11,6 @@ namespace MatchEngine::Game {
         PerspectiveCameraComponent(float fovDegrees, float aspect, float near, float far);
         PerspectiveCameraComponent(float fovDegrees, float width, float height, float near, float far);
 
-        void onStart() override;
-        
         void calculatePerspectiveMatrix(float fovDegrees, float aspect, float near, float far);
         void calculatePerspectiveMatrix(float fovDegrees, float width, float height, float near, float far);
     };

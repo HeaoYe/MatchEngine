@@ -37,6 +37,7 @@ project(MatchEngine-Demo)
 
 option(MATCH_BUILD_EXAMPLES "Build Match Examples" OFF)
 add_subdirectory(thirdparty/Match)
+add_subdirectory(thirdparty/ImGuizmo)
 
 set(MatchEngineParserPath ${CMAKE_CURRENT_SOURCE_DIR}/MatchEngineParser)
 add_subdirectory(MatchEngineParser)

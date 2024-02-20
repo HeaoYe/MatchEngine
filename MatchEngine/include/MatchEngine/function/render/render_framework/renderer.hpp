@@ -16,7 +16,11 @@ namespace MatchEngine::Renderer {
         void start();
         void render();
 
+        // 添加一个拾取GameObject的任务, 包括x y坐标, 拾取到GameObject的回调函数, 没有拾取到的回调函数
+        // 因为同步的问题, 会在一帧开始时处理拾取任务
         void pickGameObject(uint32_t x, uint32_t y, std::function<void(Game::GameObjectUUID uuid)> picked_callback, std::function<void()> miss_callback = []() {});
+
+        // 报告当前拾取的GameObject, 用于高亮显示边框
         void reportSelectedGameObject(Game::GameObjectUUID uuid = Game::GameObjectUUID(-1));
     MATCHEDITOR_VISIBLE:
         std::unique_ptr<Resource> resource;

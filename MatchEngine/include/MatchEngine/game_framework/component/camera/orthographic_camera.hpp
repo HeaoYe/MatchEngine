@@ -10,8 +10,6 @@ namespace MatchEngine::Game {
     public:
         OrthographicCameraComponent(float left, float right, float bottom, float top, float near, float far);
 
-        void onStart() override;
-
         void calculateOrthographicMatrix(float left, float right, float bottom, float top, float near, float far);
     };
 }

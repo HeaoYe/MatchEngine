@@ -11,28 +11,32 @@ namespace MatchEngine::Game {
     class Component : public RTTI {
         DefaultNoCopyMoveConstruction(Component)
         DECLARE_RTTI(Component)
+        ALLOW_REFLECT_PRIVATE()
         friend class GameObject;
     public:
         virtual ~Component() = default;
 
         // 组件接口, 可以选择部分实现
 
+        virtual void onCreate() {}
+        virtual void onAwake() {}
         // 在进入游戏循环前调用一次onStart
-        virtual void onStart() {};
+        virtual void onStart() {}
         // 以固定速率进行tick
-        virtual void onFixedTick() {};
+        virtual void onFixedTick() {}
         // 每帧tick
-        virtual void onTick(float dt) {};
+        virtual void onTick(float dt) {}
         // 每帧post tick
-        virtual void onPostTick(float dt) {};
+        virtual void onPostTick(float dt) {}
         // GameObject销毁时会调用它的所有Component的onDestroy
-        virtual void onDestroy() {};
+        virtual void onDestroy() {}
     public:
         uint32_t registerMemberUpdateCallback(std::function<void(Component *)> callback) { member_update_callbacks.insert(std::make_pair(current_member_update_callback_id, callback)); current_member_update_callback_id += 1; return current_member_update_callback_id - 1; }
         void removeMemberUpdataCallback(uint32_t callback_id) { member_update_callbacks.erase(callback_id); }
         void onMemberUpdate() { for (auto &[id, callback] : member_update_callbacks) { callback(this); } };
         ComponentTypeUUID getTypeUUID() const { return uuid; }
     protected:
+        REFLECT_MEMBER()
         class GameObject *master;  // set by game_object
         ComponentTypeUUID uuid;    // set by game_object
         uint32_t current_member_update_callback_id { 0 };

@@ -6,6 +6,7 @@
 #include <MatchEngine/function/event/event_system.hpp>
 #include <MatchEngine/function/input/input_system.hpp>
 #include <MatchEngine/function/timer/timer_system.hpp>
+#include <MatchEngine/function/camera/camera_system.hpp>
 #include <MatchEngine/function/game_framework/scene_manager.hpp>
 #include <MatchEngine/function/asset/asset_system.hpp>
 
@@ -17,6 +18,7 @@ namespace MatchEngine::UserInterface {
     extern PointerWrapper<EventSystem> event_system;
     extern PointerWrapper<InputSystem> input;
     extern PointerWrapper<TimerSystem> timer_system;
+    extern PointerWrapper<CameraSystem> camera_system;
     extern PointerWrapper<SceneManager> scene_manager;
     extern PointerWrapper<AssetSystem> assets_system;
 }
