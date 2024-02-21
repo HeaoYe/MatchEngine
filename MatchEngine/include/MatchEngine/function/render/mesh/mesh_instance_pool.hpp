@@ -10,14 +10,15 @@ namespace MatchEngine {
         NoCopyMoveConstruction(MeshInstancePool)
     public:
         MeshInstancePool(uint32_t max_mesh_instance_count);
-        ~MeshInstancePool();
 
-        uint32_t createMeshInstance(const MeshInstance &mesh_instance);
-        MeshInstance *getMeshInstancePtr(uint32_t mesh_instance_index);
+        void createMeshInstance(const MeshInstance &mesh_instance, Game::GameObjectUUID uuid);
+        MeshInstance *getMeshInstancePtr(Game::GameObjectUUID uuid);
         void clear();
     INNER_VISIBLE:
         uint32_t current_instance_count;
         std::shared_ptr<Match::Buffer> mesh_instance_buffer;
+        std::map<Game::GameObjectUUID, uint32_t> game_object_uuid_to_mesh_instance_index_map;
+        std::map<uint32_t, Game::GameObjectUUID> mesh_instance_index_to_game_object_uuid_map;
         MeshInstance *mesh_instance_buffer_ptr;
     };
 }

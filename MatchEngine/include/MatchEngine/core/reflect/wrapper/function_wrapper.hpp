@@ -13,7 +13,7 @@ namespace MatchEngine {
             callback = [func_ptr = func](void *obj_ptr, std::any args) {
                 auto wrapped_args = std::any_cast<std::array<AnyWrapper, sizeof...(Args) + 1> *>(args);
                 (*wrapped_args)[0] = AnyWrapper(*static_cast<C *>(obj_ptr));
-                std::tuple<C &, Args...> call_args = 
+                std::tuple<C &, Args...> call_args =
                 castAnyWrapperArray<C &, Args...>(
                     *wrapped_args,
                     std::make_index_sequence<sizeof...(Args) + 1> {}
@@ -35,14 +35,14 @@ namespace MatchEngine {
             callback = [func_ptr = func](void *obj_ptr, std::any args) {
                 auto wrapped_args = std::any_cast<std::array<AnyWrapper, sizeof...(Args) + 1> *>(args);
                 (*wrapped_args)[0] = AnyWrapper(*static_cast<C *>(obj_ptr));
-                std::tuple<C &, Args...> call_args = 
+                std::tuple<C &, Args...> call_args =
                 castAnyWrapperArray<C &, Args...>(
                     *wrapped_args,
                     std::make_index_sequence<sizeof...(Args) + 1> {}
                 );
                 return std::any(std::apply(func_ptr, call_args));
             };
-            
+
             create_result = [](std::any result) {
                 return AnyWrapper(std::any_cast<R>(result));
             };
@@ -53,7 +53,7 @@ namespace MatchEngine {
             callback = [func_ptr = func](void *obj_ptr, std::any args) {
                 auto wrapped_args = std::any_cast<std::array<AnyWrapper, sizeof...(Args) + 1> *>(args);
                 (*wrapped_args)[0] = AnyWrapper(*static_cast<const C *>(obj_ptr));
-                std::tuple<const C &, Args...> call_args = 
+                std::tuple<const C &, Args...> call_args =
                 castAnyWrapperArray<const C &, Args...>(
                     *wrapped_args,
                     std::make_index_sequence<sizeof...(Args) + 1> {}
@@ -75,14 +75,14 @@ namespace MatchEngine {
             callback = [func_ptr = func](void *obj_ptr, std::any args) {
                 auto wrapped_args = std::any_cast<std::array<AnyWrapper, sizeof...(Args) + 1> *>(args);
                 (*wrapped_args)[0] = AnyWrapper(*static_cast<const C *>(obj_ptr));
-                std::tuple<const C &, Args...> call_args = 
+                std::tuple<const C &, Args...> call_args =
                 castAnyWrapperArray<const C &, Args...>(
                     *wrapped_args,
                     std::make_index_sequence<sizeof...(Args) + 1> {}
                 );
                 return std::any(std::apply(func_ptr, call_args));
             };
-            
+
             create_result = [](std::any result) {
                 return AnyWrapper(std::any_cast<R>(result));
             };

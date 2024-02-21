@@ -41,7 +41,7 @@ namespace MatchEngine {
     bool InputSystem::wasKeyPressed(Key key) {
         return input_states[!current_state_index].key_states[static_cast<size_t>(key)] == ButtonState::ePressed;
     }
-    
+
     bool InputSystem::isKeyReleased(Key key) {
         return input_states[current_state_index].key_states[static_cast<size_t>(key)] == ButtonState::eReleased;
     }

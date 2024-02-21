@@ -12,6 +12,7 @@ namespace MatchEngine::Game {
         GameObject(const std::string &name);
         ~GameObject();
 
+        void awake();
         void start();
         void fixedTick();
         void tick(float dt);

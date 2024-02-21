@@ -10,6 +10,12 @@ namespace MatchEngine::Game {
         game_object_map.clear();
     }
 
+    void Scene::awake() {
+        for (auto *game_object : game_objects) {
+            game_object->awake();
+        }
+    }
+
     void Scene::start() {
         for (auto *game_object : game_objects) {
             game_object->start();
@@ -21,13 +27,13 @@ namespace MatchEngine::Game {
             game_object->fixedTick();
         }
     }
-    
+
     void Scene::tick(float dt) {
         for (auto *game_object : game_objects) {
             game_object->tick(dt);
         }
     }
-    
+
     void Scene::postTick(float dt) {
         for (auto *game_object : game_objects) {
             game_object->postTick(dt);

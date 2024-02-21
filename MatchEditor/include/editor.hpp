@@ -11,6 +11,7 @@ namespace MatchEditor {
         MatchEditor(MatchEngine::MatchEngine *engine);
         void initialize();
         void destroy();
+        void gameLoop();
         ~MatchEditor();
     private:
         MatchEngine::MatchEngine *engine;

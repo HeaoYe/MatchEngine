@@ -13,7 +13,7 @@ namespace MatchEngine {
         Singleton() {
             instance = nullptr;
         }
-        
+
         ~Singleton() {
             destory();
         }

@@ -5,6 +5,7 @@
 #include <Match/vulkan/renderer.hpp>
 #include <ui_nodes/ui_context.hpp>
 #include <imgui.h>
+#include <ImGuizmo.h>
 
 namespace MatchEditor {
     // UI节点
@@ -14,6 +15,8 @@ namespace MatchEditor {
         virtual ~UINode() = default;
         virtual void onLoadScene() {}
         virtual void onUnloadScene() {}
+        virtual void onFixedTick() {}
+        virtual void onTick(float dt) {}
         virtual void render() = 0;
     };
 
@@ -23,6 +26,8 @@ namespace MatchEditor {
         UI();
         void onLoadScene();
         void onUnloadScene();
+        void onFixedTick();
+        void onTick(float dt);
         void render();
         ~UI();
     private:

@@ -9,7 +9,7 @@ namespace MatchEngine::Renderer {
     class Subpass {
         NoCopyMoveConstruction(Subpass)
     public:
-        Subpass(const std::string &name) : name(name) {}
+        Subpass(const std::string &name, bool only_compute = false) : name(name), only_compute(only_compute) {}
         virtual ~Subpass() = default;
 
         virtual void createRenderResource(Match::RenderPassBuilder &builder) {}
@@ -20,7 +20,9 @@ namespace MatchEngine::Renderer {
         virtual void executePostRenderPass(std::shared_ptr<Match::Renderer> renderer, Resource &resource) {}
 
         std::string getName() const { return name; }
+        bool isOnlyCompute() const { return only_compute; }
     protected:
         std::string name;
+        bool only_compute;
     };
 }

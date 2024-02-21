@@ -1,0 +1,42 @@
+#version 450
+
+layout (binding = 0, r32f) uniform image2D depth;
+
+layout (std430, binding = 1) writeonly buffer TileViewZBuffer {
+    uvec2 tile_view_zs[];
+};
+
+layout (push_constant) uniform Constants {
+    uvec2 image_size;
+    uvec2 tile_size;
+    uint light_count;
+};
+
+layout (binding = 5) uniform Camera {
+    mat4 view;
+    mat4 project;
+    float near;
+    float far;
+} camera;
+
+// 2.计算每个格的最大最小深度信息(这里的深度是指相机坐标系下的z坐标的负数)
+layout (local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
+void main() {
+    uvec2 pos = gl_GlobalInvocationID.xy;
+    if (pos.x < image_size.x && pos.y < image_size.y) {
+        float depth = imageLoad(depth, ivec2(pos)).x;
+
+        // d = (p[2][2] * z + p[2][3] * 1) / -z
+        // d = -p[2][2] + p[2][3] / -z
+        // (d + p[2][2]) / p[2][3] = 1 / -z
+
+        float z_neg = 1.0 / ((depth + camera.project[2][2]) / camera.project[3][2]);
+        float z_clamp = clamp((z_neg - camera.near) / (camera.far - camera.near), 0, 1);
+
+        uint z_uint = uint(z_clamp * float(1e8));
+        uvec2 tile = uvec2(floor(vec2(pos) / 32.0));
+        uint tile_id = tile.x + tile.y * tile_size.x;
+        atomicMin(tile_view_zs[tile_id].x, z_uint);
+        atomicMax(tile_view_zs[tile_id].y, z_uint);
+    }
+}

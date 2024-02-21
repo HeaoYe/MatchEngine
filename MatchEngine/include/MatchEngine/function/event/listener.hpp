@@ -8,7 +8,7 @@ namespace MatchEngine {
 
     using ListenerUUIDType = size_t;
     constexpr ListenerUUIDType INVALID_UUID = ListenerUUIDType(-1);
-    
+
     extern ListenerUUIDType global_current_uuid;;
 
     template <class Event>

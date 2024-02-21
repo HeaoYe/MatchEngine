@@ -8,12 +8,12 @@ namespace MatchEngine {
 
         state = RuntimeSystem::State::eInitialized;
     }
-    
+
     Game::GameObjectUUID GameObjectUUIDAllocator::allocate() {
         current_uuid ++;
         return current_uuid;
     }
-    
+
     GameObjectUUIDAllocator::~GameObjectUUIDAllocator() {
         destoryRuntimeSystem();
         state = RuntimeSystem::State::eExited;

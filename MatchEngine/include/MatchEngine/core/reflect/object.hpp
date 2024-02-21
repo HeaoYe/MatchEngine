@@ -30,7 +30,7 @@ namespace MatchEngine {
         AnyWrapper getValueMutReference(const std::string &name) {
             return std::move(descriptor->getMember(name).getValueMutReferenceByPtr(ptr));
         }
-        
+
         template <typename T>
         const T &getValue(const std::string &name) const {
             return descriptor->getMember(name).getValueByPtr<T>(ptr);

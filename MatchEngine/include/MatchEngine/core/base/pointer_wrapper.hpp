@@ -4,7 +4,7 @@
 
 namespace MatchEngine {
     class MatchEngine;
-    
+
     // 包装指针,防止用户delete游戏引擎的运行时系统
     template<class T>
     class PointerWrapper {
@@ -12,7 +12,7 @@ namespace MatchEngine {
     public:
         PointerWrapper(T *ptr) : ptr(ptr) {}
         ~PointerWrapper() { ptr = nullptr; }
-        
+
         T *operator->() { return ptr; }
     private:
         T *ptr { nullptr };
@@ -24,7 +24,7 @@ namespace MatchEngine {
     public:
         ConstPointerWrapper(const T *ptr) : ptr(ptr) {}
         ~ConstPointerWrapper() { ptr = nullptr; }
-        
+
         const T *operator->() const { return ptr; }
     private:
         const T *ptr { nullptr };

@@ -15,7 +15,7 @@ namespace MatchEngine {
 
         const ReflectMemberWrapper &getMember(const std::string &name) const;
         const ReflectFunctionWrapper &getFunction(const std::string &name) const;
-        
+
         const std::vector<std::string> &getMemberNames() const;
         const std::vector<std::string> &getFunctionNames() const;
 

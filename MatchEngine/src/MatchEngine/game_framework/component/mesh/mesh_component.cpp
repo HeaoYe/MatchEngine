@@ -3,18 +3,18 @@
 #include "internal.hpp"
 
 namespace MatchEngine::Game {
-    void MeshComponent::onStart() {
+    void MeshComponent::onCreate() {
         auto mesh_instance_pool = global_runtime_context->render_system->getSwapData()->getMeshInstancePool();
         auto transform_component = master->queryComponent<TransformComponent>();
         if (transform_component != nullptr) {
-            auto idx = mesh_instance_pool->createMeshInstance({
+            mesh_instance_pool->createMeshInstance({
                 .location = transform_component->location,
                 .rotation = transform_component->rotation,
                 .scale = transform_component->scale,
                 .mesh_id = mesh_id,
-            });
-            transform_component->registerMemberUpdateCallback([transform_component, idx](Component *component) {
-                auto ptr = global_runtime_context->render_system->getSwapData()->getMeshInstancePool()->getMeshInstancePtr(idx);
+            }, master->getUUID());
+            transform_component->registerMemberUpdateCallback([transform_component, uuid = master->getUUID()](Component *component) {
+                auto ptr = global_runtime_context->render_system->getSwapData()->getMeshInstancePool()->getMeshInstancePtr(uuid);
                 ptr->location = transform_component->location;
                 ptr->rotation = transform_component->rotation;
                 ptr->scale = transform_component->scale;
@@ -25,7 +25,7 @@ namespace MatchEngine::Game {
                 .rotation = { 0, 0, 0 },
                 .scale = { 1, 1, 1 },
                 .mesh_id = mesh_id,
-            });
+            }, master->getUUID());
         }
     }
 }

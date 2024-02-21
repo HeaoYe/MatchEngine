@@ -50,7 +50,7 @@ namespace MatchEngine {
             } else {
                 type = MemberType::eCustom;
             }
-            
+
             getter_const = [ptr = member_ptr](const void * obj_ptr) {
                 return &(static_cast<const C *>(obj_ptr)->*ptr);
             };
@@ -74,11 +74,11 @@ namespace MatchEngine {
             setter_value = [ptr = member_ptr](void *obj_ptr, std::any value) {
                 static_cast<C *>(obj_ptr)->*ptr = std::any_cast<T>(value);
             };
-            
+
             create_result_const = [](std::any result) {
                 return AnyWrapper(*std::any_cast<const T *>(result));
             };
-            
+
             create_result_reference = [](std::any result) {
                 return AnyWrapper(*std::any_cast<T *>(result));
             };

@@ -1,12 +1,13 @@
-#include <ui_nodes/scene_ui_node.hpp>
+#include <ui_nodes/viewport/viewport_ui_node.hpp>
 #include <ui_nodes/hierarchy_ui_node.hpp>
-#include <ui_nodes/inspector_ui_node.hpp>
+#include <ui_nodes/inspector/inspector_ui_node.hpp>
 #include <ui_nodes/setting_ui_node.hpp>
 #include <Match/imgui/imgui.hpp>
 
 namespace MatchEditor {
     void ImGuiPass::executeRenderPass(std::shared_ptr<Match::Renderer> renderer, MatchEngine::Renderer::Resource &resource) {
         renderer->begin_layer_render("ImGui Layer");
+        ImGuizmo::BeginFrame();
 
         ui->render();
 
@@ -20,13 +21,18 @@ namespace MatchEditor {
 
         auto renderer = MatchEngine::global_runtime_context->render_system->getRenderer();
         renderer->subpasses.push_back(std::make_unique<ImGuiPass>(this));
-        renderer->renderer->attach_render_layer<Match::ImGuiLayer>("ImGui Layer", std::vector { MatchEngine::Renderer::output_attachment_name });
+        renderer->renderer->attach_render_layer<Match::ImGuiLayer>("ImGui Layer", std::vector { MatchEngine::global_runtime_context->render_system->getOutputAttachmentName() });
         ImGui::LoadIniSettingsFromDisk("assets/ui/imgui.ini");
         ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
         global_ui_context = new UIContext();
-        ui_nodes.push_back(std::make_unique<SceneUINode>());
-        ui_nodes.push_back(std::make_unique<HierarchyUINode>());
+        auto viewport_ui_node = std::make_unique<ViewportUINode>();
+        auto hierarchy_ui_node = std::make_unique<HierarchyUINode>();
+        viewport_ui_node->bindOnSelectGameObject([ptr = hierarchy_ui_node.get()](MatchEngine::Game::GameObjectUUID uuid) {
+            ptr->selectGameObject(uuid);
+        });
+        ui_nodes.push_back(std::move(viewport_ui_node));
+        ui_nodes.push_back(std::move(hierarchy_ui_node));
         ui_nodes.push_back(std::make_unique<InspectorUINode>());
         ui_nodes.push_back(std::make_unique<SettingUINode>());
     }
@@ -40,6 +46,18 @@ namespace MatchEditor {
     void UI::onUnloadScene() {
         for (auto &node : ui_nodes) {
             node->onUnloadScene();
+        }
+    }
+
+    void UI::onFixedTick() {
+        for (auto &node : ui_nodes) {
+            node->onFixedTick();
+        }
+    }
+
+    void UI::onTick(float dt) {
+        for (auto &node : ui_nodes) {
+            node->onTick(dt);
         }
     }
 

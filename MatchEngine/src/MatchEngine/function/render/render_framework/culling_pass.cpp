@@ -3,7 +3,7 @@
 
 namespace MatchEngine::Renderer {
     void CullingPass::createRenderResource(Match::RenderPassBuilder &builder) {
-        builder.add_attachment("depth", Match::AttachmentType::eDepthBuffer);
+        builder.add_attachment("depth", Match::AttachmentType::eStencilBuffer);
     }
 
     void CullingPass::postCreateRenderResource(std::shared_ptr<Match::Renderer> renderer, Resource &resource) {
@@ -35,16 +35,16 @@ namespace MatchEngine::Renderer {
             .setOldLayout(vk::ImageLayout::eUndefined)
             .setNewLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal)
             .setSubresourceRange({
-                vk::ImageAspectFlagBits::eDepth | (Match::has_stencil_component(Match::get_supported_depth_format()) ? vk::ImageAspectFlagBits::eStencil : vk::ImageAspectFlagBits::eNone) ,
+                vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil ,
                 0,
                 1,
                 0,
                 1
-            }); 
+            });
         auto command_buffer = manager->command_pool->allocate_single_use();
         command_buffer.pipelineBarrier(vk::PipelineStageFlagBits::eTopOfPipe, vk::PipelineStageFlagBits::eEarlyFragmentTests, {}, {}, {}, image_barrier);
         manager->command_pool->free_single_use(command_buffer);
-        
+
         vk::SamplerReductionModeCreateInfo sampler_reduction_mode {};
         sampler_reduction_mode.setReductionMode(vk::SamplerReductionMode::eMax);
         vk::SamplerCreateInfo sampler_create_info {};
@@ -66,12 +66,12 @@ namespace MatchEngine::Renderer {
                 .setOldLayout(vk::ImageLayout::eUndefined)
                 .setNewLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal)
                 .setSubresourceRange({
-                    vk::ImageAspectFlagBits::eDepth | (Match::has_stencil_component(Match::get_supported_depth_format()) ? vk::ImageAspectFlagBits::eStencil : vk::ImageAspectFlagBits::eNone) ,
+                    vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil ,
                     0,
                     1,
                     0,
                     1
-                }); 
+                });
             auto command_buffer = global_runtime_context->render_system->getMatchAPIManager()->command_pool->allocate_single_use();
             command_buffer.pipelineBarrier(vk::PipelineStageFlagBits::eTopOfPipe, vk::PipelineStageFlagBits::eEarlyFragmentTests, {}, {}, {}, image_barrier);
             global_runtime_context->render_system->getMatchAPIManager()->command_pool->free_single_use(command_buffer);
@@ -90,7 +90,7 @@ namespace MatchEngine::Renderer {
                 global_runtime_context->render_system->getMatchAPIManager()->device->device.updateDescriptorSets({ descriptor_write }, {});
             }
         });
-        
+
         for (size_t in_flight_index = 0; in_flight_index < Match::setting.max_in_flight_frame; in_flight_index ++) {
             auto image = std::make_shared<Match::Image>(width, height, vk::Format::eR32Sfloat, vk::ImageUsageFlagBits::eStorage | vk::ImageUsageFlagBits::eSampled, vk::SampleCountFlagBits::e1, VMA_MEMORY_USAGE_GPU_ONLY, VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT, resource.depth_mip_level_count);
             Match::transition_image_layout(image->image, vk::ImageAspectFlagBits::eColor, resource.depth_mip_level_count, { vk::ImageLayout::eUndefined, vk::AccessFlagBits::eNone, vk::PipelineStageFlagBits::eTopOfPipe }, { vk::ImageLayout::eGeneral, vk::AccessFlagBits::eShaderRead | vk::AccessFlagBits::eShaderWrite, vk::PipelineStageFlagBits::eComputeShader });
@@ -166,6 +166,8 @@ namespace MatchEngine::Renderer {
         resource.indirect_commands_buffer = std::make_shared<Match::InFlightBuffer>(sizeof(vk::DrawIndexedIndirectCommand) * max_primitive_count, vk::BufferUsageFlagBits::eStorageBuffer, VMA_MEMORY_USAGE_GPU_ONLY, VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT);
         resource.available_indirect_commands_buffer = std::make_shared<Match::InFlightBuffer>(resource.indirect_commands_buffer->get_size(), vk::BufferUsageFlagBits::eIndirectBuffer | vk::BufferUsageFlagBits::eStorageBuffer, VMA_MEMORY_USAGE_GPU_ONLY, VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT);
         resource.instance_datas_buffer = std::make_shared<Match::InFlightBuffer>(sizeof(glm::vec4) * 3 * max_mesh_instance_count, vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eStorageBuffer, VMA_MEMORY_USAGE_GPU_ONLY, VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT);
+        resource.outlining_buffer = std::make_shared<Match::InFlightBuffer>(sizeof(glm::vec4) * 3 + sizeof(vk::DrawIndexedIndirectCommand), vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eIndirectBuffer | vk::BufferUsageFlagBits::eStorageBuffer, VMA_MEMORY_USAGE_GPU_ONLY, VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT);
+        resource.selected_mesh_instance_index = uint32_t(-1);
 
         resource.culling_command_buffers = manager->command_pool->allocate_command_buffer(Match::setting.max_in_flight_frame);
 
@@ -190,8 +192,8 @@ namespace MatchEngine::Renderer {
             .bind_storage_buffer(0, global_runtime_context->render_system->getSwapData()->getMeshInstancePool()->mesh_instance_buffer)
             .bind_storage_buffer(1, global_runtime_context->assets_system->getMeshPool()->mesh_descriptor_buffer)
             .bind_storage_buffer(2, global_runtime_context->assets_system->getMeshPool()->primitive_descriptor_buffer)
-            .bind_uniform(3, global_runtime_context->render_system->getSwapData()->getCameraUniformBuffer());
-        
+            .bind_uniform(3, global_runtime_context->camera_system->getViewportCamera());
+
         descriptor_set = factory->create_descriptor_set();
         descriptor_set->add_descriptors({
             { Match::ShaderStage::eCompute, 0, Match::DescriptorType::eStorageBuffer },
@@ -201,13 +203,15 @@ namespace MatchEngine::Renderer {
             { Match::ShaderStage::eCompute, 4, Match::DescriptorType::eStorageBuffer },
             { Match::ShaderStage::eCompute, 5, Match::DescriptorType::eStorageBuffer },
             { Match::ShaderStage::eCompute, 6, Match::DescriptorType::eTexture },
+            { Match::ShaderStage::eCompute, 7, Match::DescriptorType::eStorageBuffer },
         }).allocate()
             .bind_storage_buffer(0, resource.counts_buffer)
             .bind_storage_buffer(1, resource.visible_mesh_instance_indices_buffer)
             .bind_storage_buffer(2, resource.primitive_counts_buffer)
             .bind_storage_buffer(3, resource.indirect_commands_buffer)
             .bind_storage_buffer(4, resource.available_indirect_commands_buffer)
-            .bind_storage_buffer(5, resource.instance_datas_buffer);
+            .bind_storage_buffer(5, resource.instance_datas_buffer)
+            .bind_storage_buffer(7, resource.outlining_buffer);
         for (size_t in_flight_index = 0; in_flight_index < Match::setting.max_in_flight_frame; in_flight_index ++) {
             vk::DescriptorImageInfo image_info {};
             image_info.setImageLayout(vk::ImageLayout::eGeneral)
@@ -221,18 +225,19 @@ namespace MatchEngine::Renderer {
                 .setImageInfo(image_info);
             manager->device->device.updateDescriptorSets({ descriptor_write }, {});
         }
-        
+
         constants = factory->create_push_constants(
-            Match::ShaderStage::eCompute, 
+            Match::ShaderStage::eCompute,
             {
                 { "mesh_instance_count", Match::ConstantType::eUint32 },
                 { "primitive_count", Match::ConstantType::eUint32 },
                 { "depth_texture_size", Match::ConstantType::eUint32x2 },
+                { "selected_mesh_instance_index", Match::ConstantType::eUint32 },
             }
         );
         glm::uvec2 size = { width, height };
         constants->push_constant("depth_texture_size", &size);
-        
+
         pre_culling_shader_program = factory->create_compute_shader_program();
         pre_culling_shader_program->attach_compute_shader(factory->compile_shader(getName() + "/pre_culling.comp", Match::ShaderStage::eCompute))
             .attach_descriptor_set(descriptor_set, 0)
@@ -271,6 +276,7 @@ namespace MatchEngine::Renderer {
     void CullingPass::executePreRenderPass(std::shared_ptr<Match::Renderer> renderer, Resource &resource) {
         // 执行剔除工作
 
+        constants->push_constant("selected_mesh_instance_index", resource.selected_mesh_instance_index);
         auto command_buffer = resource.culling_command_buffers.at(renderer->current_in_flight);
         command_buffer.reset();
         vk::CommandBufferBeginInfo begin_info {};
@@ -290,14 +296,14 @@ namespace MatchEngine::Renderer {
             .setOldLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal)
             .setNewLayout(vk::ImageLayout::eShaderReadOnlyOptimal)
             .setSubresourceRange({
-                vk::ImageAspectFlagBits::eDepth | (Match::has_stencil_component(Match::get_supported_depth_format()) ? vk::ImageAspectFlagBits::eStencil : vk::ImageAspectFlagBits::eNone) ,
+                vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil ,
                 0,
                 1,
                 0,
                 1
-            }); 
+            });
         command_buffer.pipelineBarrier(vk::PipelineStageFlagBits::eEarlyFragmentTests, vk::PipelineStageFlagBits::eComputeShader, {}, {}, {}, image_barrier);
-        if (!global_runtime_context->render_system->getSwapData()->isCameraFixed()) {
+        if (!global_runtime_context->camera_system->isFixedClip()) {
             command_buffer.dispatch(std::ceil(image_size.x / 16.0), std::ceil(image_size.y / 16.0), 1);
         }
         image_barrier.setSrcAccessMask(vk::AccessFlagBits::eShaderRead)
@@ -433,14 +439,5 @@ namespace MatchEngine::Renderer {
         // 6.生成最终的IndirectCommand, 从模板IndirectCommand中剔除不绘制任何实例的IndirectCommand
         command_buffer.bindPipeline(vk::PipelineBindPoint::eCompute, generate_available_indirect_command_shader_program->pipeline);
         command_buffer.dispatch(std::ceil(primitive_count / 256.0), 1, 1);
-
-        command_buffer.end();
-        vk::SubmitInfo submit_info {};
-        submit_info.setCommandBuffers(command_buffer)
-            .setSignalSemaphores(resource.culling_finish_semaphores.at(renderer->current_in_flight));
-        resource.current_in_flight_wait_semaphore.push_back(resource.culling_finish_semaphores.at(renderer->current_in_flight));
-        resource.current_in_flight_wait_stages.push_back(vk::PipelineStageFlagBits::eComputeShader);
-
-        global_runtime_context->render_system->getMatchAPIManager()->device->compute_queue.submit(submit_info);
     }
 }

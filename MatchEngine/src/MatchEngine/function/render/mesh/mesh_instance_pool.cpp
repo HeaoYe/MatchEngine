@@ -5,22 +5,19 @@ namespace MatchEngine {
         mesh_instance_buffer = std::make_shared<Match::Buffer>(sizeof(MeshInstance) * max_mesh_instance_count, vk::BufferUsageFlagBits::eStorageBuffer, VMA_MEMORY_USAGE_CPU_TO_GPU, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
         mesh_instance_buffer_ptr = static_cast<MeshInstance *>(mesh_instance_buffer->map());
     }
-    
-    MeshInstancePool::~MeshInstancePool() {
-        mesh_instance_buffer.reset();
-    }
 
-    uint32_t MeshInstancePool::createMeshInstance(const MeshInstance &mesh_instance) {
+    void MeshInstancePool::createMeshInstance(const MeshInstance &mesh_instance, Game::GameObjectUUID uuid) {
         *mesh_instance_buffer_ptr = mesh_instance;
         mesh_instance_buffer_ptr ++;
         current_instance_count ++;
-        return current_instance_count - 1;
+        game_object_uuid_to_mesh_instance_index_map.insert(std::make_pair(uuid, current_instance_count - 1));
+        mesh_instance_index_to_game_object_uuid_map.insert(std::make_pair(current_instance_count - 1, uuid));
     }
 
-    MeshInstance *MeshInstancePool::getMeshInstancePtr(uint32_t mesh_instance_index) {
-        return static_cast<MeshInstance *>(mesh_instance_buffer->map()) + mesh_instance_index;
+    MeshInstance *MeshInstancePool::getMeshInstancePtr(Game::GameObjectUUID uuid) {
+        return static_cast<MeshInstance *>(mesh_instance_buffer->map()) + game_object_uuid_to_mesh_instance_index_map.at(uuid);
     }
- 
+
     void MeshInstancePool::clear() {
         mesh_instance_buffer_ptr = static_cast<MeshInstance *>(mesh_instance_buffer->map());
         current_instance_count = 0;

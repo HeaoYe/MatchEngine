@@ -18,11 +18,11 @@ namespace MatchEngine::Game {
         CameraComponent *camera_component;
         TransformComponent *transform_component;
         glm::vec3 *location;
-        float yaw { 0 }, pitch { 0 };
+        float *yaw, *pitch;
 
         REFLECT_MEMBER()
         float speed { 10 };
-        
+
         REFLECT_MEMBER()
         float sensitivity { 10 };
     };

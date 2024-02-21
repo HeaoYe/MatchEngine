@@ -44,7 +44,7 @@
     2.处理反射和序列化中类的继承关系
 
 本期大纲
-    
+
     1.反射接口修改
 
     2.基础GamePlay架构
@@ -88,3 +88,37 @@
     4.支持固定裁剪相机
 
     5.支持垂直同步
+
+本期大纲
+
+    1.使用 Visibility Buffer
+
+    2.性能情况，使用Nsight分析性能
+    // 因为编辑器对性能有影响，暂时关掉
+    // (1) 创建Hierarchical Z-Buffer花费50微秒
+    // (2) 收集并剔除所有实例，花费27微秒
+    // (3) 四次DrawCall，绘制不同Lod的模型到DepthBuffer和VisibilityBuffer，花费3微秒
+    // (4) 根据VisibilityBuffer，上色，花费7微秒
+    // (5) 共计90微秒
+
+本期大纲
+
+    1.上期的性能测试有问题, (3)那步用的是drawIndexedIndirectCount, 他会产生4各SubDraw, 但是Nsight统计不到SubDraw的时间, 不知道是不是bug
+
+    2.相机系统
+
+    3.拾取GameObject
+
+    4.Play Game
+
+    5.UI系统
+
+    6.添加了Benchmark
+
+    7.开学了............
+
+本期大纲
+
+    1.实现了 Tiled Based Light Culling, 支持几乎无限的点光源, 为了节省内存, 只支持1024个点光源
+
+    2.拖更提上日程!!!

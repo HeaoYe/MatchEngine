@@ -86,14 +86,14 @@ class FileParser:
 
         self.register_code_fragment = ""
         self.serialize_code_fragment = ""
-    
+
     def parse(self):
         with open(self.filename, "r") as f:
             raf = RemoveAnnotationFile(f)
             if raf.need_parse:
                 self.parse_namespace("", raf, "")
             return raf.need_parse
-    
+
     def parse_namespace(self, line, f, prefix):
         count = line.count("{") - line.count("}")
 
@@ -115,7 +115,7 @@ class FileParser:
                 break
             if bool(self.match_reflect_class.match(line)):
                 self.parse_reflect_class(line, f, prefix)
-    
+
     def parse_reflect_class(self, line, f, prefix):
         count = 0
         class_type = ""
@@ -179,7 +179,7 @@ class FileParser:
                         function_aliases.append(names[0])
                     else:
                         function_aliases.append(function_names[-1])
-        
+
         if not serializable_class_only:
             self.register_code_fragment += (f'    ::MatchEngine::UserInterface::reflect->addClass<{class_type}>("{class_name}")')
             for i in range(len(member_names)):
@@ -237,7 +237,7 @@ if __name__ == "__main__":
     header_filename = os.path.join(header_dir, "MatchEngine_AutoGenerate.hpp");
     source_dir = join_path_and_safe_create(output_dir, "src")
     source_filename = os.path.join(source_dir, "MatchEngine_AutoGenerate.cpp");
-    
+
     print(header_filename, source_filename)
 
     header_code_fragment = ""

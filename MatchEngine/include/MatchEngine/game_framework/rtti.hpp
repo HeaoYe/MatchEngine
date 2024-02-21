@@ -12,6 +12,10 @@ namespace MatchEngine::Game {
         virtual std::string getClassName() const { return ""; }
         static std::string GetClassName() { return ""; }
     public:
+        Object cast(const std::string &name) {
+            return Object(&UserInterface::reflect->getClassByName(name), this, false);
+        }
+
         template <typename T>
         const T &getValue(const std::string &name) const {
             return descriptor->getMember(name).getValueByPtr<T>(this);

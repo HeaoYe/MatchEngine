@@ -16,6 +16,12 @@ namespace MatchEngine::Game {
         component_map.clear();
     }
 
+    void GameObject::awake() {
+        for (auto *component : components) {
+            component->onAwake();
+        }
+    }
+
     void GameObject::start() {
         for (auto *component : components) {
             component->onStart();
@@ -50,12 +56,13 @@ namespace MatchEngine::Game {
         component->setupRTTI();
         component_map.insert(std::make_pair(component->getTypeUUID(), component));
         components.push_back(component);
+        component->onCreate();
     }
 
     void GameObject::removeComponent(Component *component) {
         removeComponent(component->getTypeUUID());
     }
-    
+
     void GameObject::removeComponent(ComponentTypeUUID uuid) {
         if (auto iter = component_map.find(uuid); iter != component_map.end()) {
             components.remove(iter->second);

@@ -6,9 +6,9 @@ namespace MatchEngine {
         last_time = clock.now();
         suspended = false;
     }
-    
+
     Timer::~Timer() {}
-    
+
     float Timer::tick(std::chrono::milliseconds delta_time_ms) {
         auto dt = std::chrono::duration_cast<std::chrono::microseconds>(clock.now() - last_time).count();
         auto wait = std::chrono::duration_cast<std::chrono::microseconds>(delta_time_ms).count() - dt;
@@ -20,7 +20,7 @@ namespace MatchEngine {
         last_time = clock.now();
         return time_rate * static_cast<float>(dt) * 0.000001f;
     }
-    
+
     void Timer::setTimeRate(float time_rate) {
         this->time_rate = time_rate;
     }
@@ -28,7 +28,7 @@ namespace MatchEngine {
     void Timer::suspend() {
         suspended = true;
     }
-    
+
     void Timer::resume() {
         suspended = false;
         last_time = clock.now();
