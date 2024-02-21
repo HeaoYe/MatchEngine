@@ -110,7 +110,7 @@ namespace MatchEngine {
         fixed_tick_timer = global_runtime_context->timer_system->createTimer();
         benchmark = global_runtime_context->timer_system->createTimer();
         stop();
-        
+
         // 在一个单独的线程，进行30FPS的固定频率tick
         fixed_tick_thread = std::make_unique<std::thread>([this]() {
             while (global_runtime_context->window_system->isAlive()) {
@@ -168,11 +168,11 @@ namespace MatchEngine {
         global_runtime_context->logger_system.destory();
         client_logger = nullptr;
         core_logger = nullptr;
-        
+
         // 销毁反射系统
         UserInterface::reflect.ptr = nullptr;
         global_runtime_context->reflect_system.destory();
-        
+
         delete global_runtime_context;
         global_runtime_context = nullptr;
     }
@@ -217,7 +217,7 @@ namespace MatchEngine {
         global_runtime_context->input_system->swapState();
 
     }
-    
+
     void MatchEngine::waitFixedTickThread() {
         fixed_tick_thread->join();
         fixed_tick_thread.reset();

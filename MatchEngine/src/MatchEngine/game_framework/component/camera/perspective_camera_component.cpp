@@ -14,7 +14,7 @@ namespace MatchEngine::Game {
     void PerspectiveCameraComponent::calculatePerspectiveMatrix(float fovDegrees, float aspect, float near, float far) {
         global_runtime_context->camera_system->reportCameraProjectMatrix(camera_id, glm::perspective(glm::radians(fovDegrees), aspect, near, far), near, far);
     }
-    
+
     void PerspectiveCameraComponent::calculatePerspectiveMatrix(float fovDegrees, float width, float height, float near, float far) {
         global_runtime_context->camera_system->reportCameraProjectMatrix(camera_id, glm::perspectiveFov(glm::radians(fovDegrees), width, height, near, far), near, far);
     }

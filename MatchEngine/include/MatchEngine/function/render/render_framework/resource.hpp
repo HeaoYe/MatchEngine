@@ -10,7 +10,7 @@ namespace MatchEngine::Renderer {
         uint32_t visibility_count { 0 };
         uint32_t draw_call_count { 0 };
         // ------------
-        
+
         // Renderer 渲染器同步参数
         std::vector<std::vector<vk::PipelineStageFlags>> in_flight_wait_stages;
         std::vector<std::vector<vk::Semaphore>> in_flight_wait_semaphore;

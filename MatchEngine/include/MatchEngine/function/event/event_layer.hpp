@@ -17,7 +17,7 @@ namespace MatchEngine {
             global_current_uuid ++;
             return ListenerUUID<Event>(global_current_uuid - 1);
         }
-        
+
         template <class Event>
         bool dispatch(Event &event) {
             for (auto &[uuid, listener] : Event::listeners[name]) {

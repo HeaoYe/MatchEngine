@@ -40,11 +40,11 @@ namespace MatchEngine::Renderer {
                 1,
                 0,
                 1
-            }); 
+            });
         auto command_buffer = manager->command_pool->allocate_single_use();
         command_buffer.pipelineBarrier(vk::PipelineStageFlagBits::eTopOfPipe, vk::PipelineStageFlagBits::eEarlyFragmentTests, {}, {}, {}, image_barrier);
         manager->command_pool->free_single_use(command_buffer);
-        
+
         vk::SamplerReductionModeCreateInfo sampler_reduction_mode {};
         sampler_reduction_mode.setReductionMode(vk::SamplerReductionMode::eMax);
         vk::SamplerCreateInfo sampler_create_info {};
@@ -71,7 +71,7 @@ namespace MatchEngine::Renderer {
                     1,
                     0,
                     1
-                }); 
+                });
             auto command_buffer = global_runtime_context->render_system->getMatchAPIManager()->command_pool->allocate_single_use();
             command_buffer.pipelineBarrier(vk::PipelineStageFlagBits::eTopOfPipe, vk::PipelineStageFlagBits::eEarlyFragmentTests, {}, {}, {}, image_barrier);
             global_runtime_context->render_system->getMatchAPIManager()->command_pool->free_single_use(command_buffer);
@@ -90,7 +90,7 @@ namespace MatchEngine::Renderer {
                 global_runtime_context->render_system->getMatchAPIManager()->device->device.updateDescriptorSets({ descriptor_write }, {});
             }
         });
-        
+
         for (size_t in_flight_index = 0; in_flight_index < Match::setting.max_in_flight_frame; in_flight_index ++) {
             auto image = std::make_shared<Match::Image>(width, height, vk::Format::eR32Sfloat, vk::ImageUsageFlagBits::eStorage | vk::ImageUsageFlagBits::eSampled, vk::SampleCountFlagBits::e1, VMA_MEMORY_USAGE_GPU_ONLY, VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT, resource.depth_mip_level_count);
             Match::transition_image_layout(image->image, vk::ImageAspectFlagBits::eColor, resource.depth_mip_level_count, { vk::ImageLayout::eUndefined, vk::AccessFlagBits::eNone, vk::PipelineStageFlagBits::eTopOfPipe }, { vk::ImageLayout::eGeneral, vk::AccessFlagBits::eShaderRead | vk::AccessFlagBits::eShaderWrite, vk::PipelineStageFlagBits::eComputeShader });
@@ -193,7 +193,7 @@ namespace MatchEngine::Renderer {
             .bind_storage_buffer(1, global_runtime_context->assets_system->getMeshPool()->mesh_descriptor_buffer)
             .bind_storage_buffer(2, global_runtime_context->assets_system->getMeshPool()->primitive_descriptor_buffer)
             .bind_uniform(3, global_runtime_context->camera_system->getViewportCamera());
-        
+
         descriptor_set = factory->create_descriptor_set();
         descriptor_set->add_descriptors({
             { Match::ShaderStage::eCompute, 0, Match::DescriptorType::eStorageBuffer },
@@ -225,9 +225,9 @@ namespace MatchEngine::Renderer {
                 .setImageInfo(image_info);
             manager->device->device.updateDescriptorSets({ descriptor_write }, {});
         }
-        
+
         constants = factory->create_push_constants(
-            Match::ShaderStage::eCompute, 
+            Match::ShaderStage::eCompute,
             {
                 { "mesh_instance_count", Match::ConstantType::eUint32 },
                 { "primitive_count", Match::ConstantType::eUint32 },
@@ -237,7 +237,7 @@ namespace MatchEngine::Renderer {
         );
         glm::uvec2 size = { width, height };
         constants->push_constant("depth_texture_size", &size);
-        
+
         pre_culling_shader_program = factory->create_compute_shader_program();
         pre_culling_shader_program->attach_compute_shader(factory->compile_shader(getName() + "/pre_culling.comp", Match::ShaderStage::eCompute))
             .attach_descriptor_set(descriptor_set, 0)
@@ -301,7 +301,7 @@ namespace MatchEngine::Renderer {
                 1,
                 0,
                 1
-            }); 
+            });
         command_buffer.pipelineBarrier(vk::PipelineStageFlagBits::eEarlyFragmentTests, vk::PipelineStageFlagBits::eComputeShader, {}, {}, {}, image_barrier);
         if (!global_runtime_context->camera_system->isFixedClip()) {
             command_buffer.dispatch(std::ceil(image_size.x / 16.0), std::ceil(image_size.y / 16.0), 1);

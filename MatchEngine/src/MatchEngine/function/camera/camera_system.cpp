@@ -47,7 +47,7 @@ namespace MatchEngine {
             }
         }
     }
-    
+
     void CameraSystem::reportCameraProjectMatrix(CameraID id, const glm::mat4 &project, bool is_editor_camera) {
         float near = project[3][2] / (project[2][2] - 1);
         float far = project[3][2] / (project[2][2] + 1);
@@ -95,7 +95,7 @@ namespace MatchEngine {
         fixed_clip = false;
         memcpy(clip_camera->get_uniform_ptr(), viewport_camera->get_uniform_ptr(), sizeof(CameraData));
     }
- 
+
     void CameraSystem::activeEditorCamera(CameraID id) {
         editor_camera_active = true;
 

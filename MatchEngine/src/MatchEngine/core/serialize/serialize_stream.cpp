@@ -9,7 +9,7 @@ namespace MatchEngine {
     SerializeStream::~SerializeStream() {
         data.clear();
     }
-    
+
     void *SerializeStream::getSaftPtr(size_t write_size) {
         while (data.size() + write_size > data.capacity()) {
             data.reserve(static_cast<size_t>(data.capacity() * 1.5));

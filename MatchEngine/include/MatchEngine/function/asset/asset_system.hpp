@@ -14,7 +14,7 @@ namespace MatchEngine {
 
         // 从.obj文件加载一个Mesh
         MeshID loadMesh(const std::string &filename, const std::vector<std::string> &lods = {});
-        
+
         size_t getMaxPrimitiveCount() const { return 4096; }
         size_t getMaxMeshCount() const { return 1024; }
         PointerWrapper<MeshPool> getMeshPool() { return mesh_pool.get(); }

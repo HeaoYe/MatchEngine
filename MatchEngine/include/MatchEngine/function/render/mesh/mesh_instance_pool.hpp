@@ -10,7 +10,6 @@ namespace MatchEngine {
         NoCopyMoveConstruction(MeshInstancePool)
     public:
         MeshInstancePool(uint32_t max_mesh_instance_count);
-        ~MeshInstancePool();
 
         void createMeshInstance(const MeshInstance &mesh_instance, Game::GameObjectUUID uuid);
         MeshInstance *getMeshInstancePtr(Game::GameObjectUUID uuid);

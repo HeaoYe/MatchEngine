@@ -11,7 +11,7 @@ namespace MatchEngine {
         std::vector<glm::vec3> normals;
         std::vector<glm::vec2> tex_coords;
         std::vector<glm::vec3> colors;
-        
+
         std::vector<uint32_t> indices;
     };
 

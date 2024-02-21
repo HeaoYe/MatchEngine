@@ -36,7 +36,7 @@ namespace MatchEngine {
         SerializeTrait<T>::deserialize(lhs, *rhs);
         return lhs;
     };
-    
+
     // 基础类型反序列化
     template <class T>
     void SerializeTrait<T>::deserialize(DeserializeStream &ds, T &rhs) {

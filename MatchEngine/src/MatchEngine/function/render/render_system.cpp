@@ -19,18 +19,18 @@ namespace MatchEngine {
     void RenderSystem::render() {
         renderer->render();
     }
-    
+
     void RenderSystem::waitRenderDevice() {
         vkDeviceWaitIdle(manager->device->device);
     }
-    
+
     RenderSystem::~RenderSystem() {
         destoryRuntimeSystem();
         state = RuntimeSystem::State::eExited;
 
         renderer.reset();
         swap_data.reset();
-        
+
         factory.reset();
         manager = nullptr;
     }

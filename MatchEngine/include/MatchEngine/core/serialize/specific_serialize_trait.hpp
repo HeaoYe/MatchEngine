@@ -8,7 +8,7 @@
 
 namespace MatchEngine {
     // STL序列化与反序列化
-    
+
     template <>
     struct SerializeTrait<std::string> {
         static void serialize(SerializeStream &ss, const std::string &str) {

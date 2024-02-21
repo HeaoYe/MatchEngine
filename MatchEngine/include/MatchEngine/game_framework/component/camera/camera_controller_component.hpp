@@ -22,7 +22,7 @@ namespace MatchEngine::Game {
 
         REFLECT_MEMBER()
         float speed { 10 };
-        
+
         REFLECT_MEMBER()
         float sensitivity { 10 };
     };

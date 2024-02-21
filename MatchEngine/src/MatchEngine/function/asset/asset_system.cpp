@@ -11,7 +11,7 @@ namespace MatchEngine {
         glm::vec3 normal;
         glm::vec2 tex_coord;
         glm::vec3 color;
- 
+
         bool operator==(const ObjVertex& rhs) const {
             return (pos == rhs.pos) && (normal == rhs.normal) && (tex_coord == rhs.tex_coord) && (color == rhs.color);
         }
@@ -24,7 +24,7 @@ namespace std {
             return ((
                     ((hash<glm::vec3>()(vertex.pos) ^ (hash<glm::vec3>()(vertex.normal) << 1)) >> 1) ^
                     (hash<glm::vec3>()(vertex.color) << 1)
-                ) >> 1) ^ 
+                ) >> 1) ^
                 (hash<glm::vec2>()(vertex.tex_coord) << 1);
         }
     };

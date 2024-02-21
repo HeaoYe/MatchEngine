@@ -33,21 +33,21 @@ namespace MatchEngine {
         }
         MCH_CORE_ERROR("No scene named {}.", name);
     }
-    
+
     void SceneManager::start() {
         active_scene->awake();
         active_scene->start();
     }
-    
+
     void SceneManager::fixedTick() {
         active_scene->fixedTick();
     }
-    
+
     void SceneManager::tick(float dt) {
         active_scene->tick(dt);
         active_scene->postTick(dt);
     }
-    
+
     void SceneManager::swap() {
         if (change_scene == nullptr) {
             return;
@@ -57,7 +57,7 @@ namespace MatchEngine {
         global_runtime_context->render_system->getSwapData()->clear();
         start();
     }
-    
+
     SceneManager::~SceneManager() {
         destoryRuntimeSystem();
         state = RuntimeSystem::State::eExited;

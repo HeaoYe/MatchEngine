@@ -46,7 +46,7 @@ namespace MatchEngine {
             MCH_ERROR("Mesh Index Buffer Out Of Memory")
             return MeshID(-1);
         }
-        
+
         mesh_descriptor_buffer_ptr->aabb_min = { std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max() };
         mesh_descriptor_buffer_ptr->aabb_max = { std::numeric_limits<float>::min(), std::numeric_limits<float>::min(), std::numeric_limits<float>::min() };
         mesh_descriptor_buffer_ptr->radius = 0;

@@ -62,7 +62,7 @@ namespace MatchEngine::Game {
     void GameObject::removeComponent(Component *component) {
         removeComponent(component->getTypeUUID());
     }
-    
+
     void GameObject::removeComponent(ComponentTypeUUID uuid) {
         if (auto iter = component_map.find(uuid); iter != component_map.end()) {
             components.remove(iter->second);

@@ -17,13 +17,13 @@ namespace MatchEngine {
             timer->setTimeRate(time_rate);
         }
     }
-    
+
     void TimerSystem::suspendAll() {
         for (auto timer : timers) {
             timer->suspend();
         }
     }
-    
+
     void TimerSystem::resumeAll() {
         for (auto timer : timers) {
             timer->resume();

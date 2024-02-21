@@ -51,7 +51,7 @@ namespace MatchEngine::Renderer {
             .bind_storage_buffer(7, resource.instance_datas_buffer)
             .bind_storage_buffer(8, resource.counts_buffer)
             .bind_storage_buffer(9, resource.available_indirect_commands_buffer);
-        
+
         auto vert_shader = factory->compile_shader(getName() + "/shader.vert", Match::ShaderStage::eVertex);
         auto frag_shader = factory->compile_shader(getName() + "/shader.frag", Match::ShaderStage::eFragment);
         mesh_shader_program = factory->create_shader_program(renderer, name);
@@ -63,7 +63,7 @@ namespace MatchEngine::Renderer {
                 .depth_test_enable = VK_FALSE,
             });
     }
-    
+
     void MeshPass::executeRenderPass(std::shared_ptr<Match::Renderer> renderer, Resource &resource) {
         auto command_buffer = renderer->get_command_buffer();
         renderer->bind_shader_program(mesh_shader_program);

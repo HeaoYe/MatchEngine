@@ -10,7 +10,7 @@ namespace MatchEngine::Renderer {
                 {
                     .stage = vk::PipelineStageFlagBits::eColorAttachmentOutput,
                     .access = vk::AccessFlagBits::eColorAttachmentWrite,
-                }, 
+                },
                 {
                     .stage = vk::PipelineStageFlagBits::eColorAttachmentOutput,
                     .access = vk::AccessFlagBits::eColorAttachmentWrite,

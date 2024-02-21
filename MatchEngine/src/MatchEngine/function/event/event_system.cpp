@@ -15,7 +15,7 @@ namespace MatchEngine {
     EventSystem::~EventSystem() {
         destoryRuntimeSystem();
         state = RuntimeSystem::State::eExited;
-        
+
         layers_map.clear();
         for (auto layer : layers) {
             delete layer;
@@ -61,7 +61,7 @@ namespace MatchEngine {
 
     void EventSystem::registerEventCallbacks() {
         Match::window->poll_events();
-        
+
         auto *native_pointer = Match::window->get_glfw_window();
         glfwSetFramebufferSizeCallback(static_cast<GLFWwindow *>(native_pointer), [](GLFWwindow *, int width, int height){
             global_runtime_context->event_system->dispatch<WindowResizedEvent>({ .width = width, .height = height });

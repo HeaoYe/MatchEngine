@@ -32,7 +32,7 @@ namespace MatchEngine::Renderer {
 
         renderer = global_runtime_context->render_system->getMatchFactory()->create_renderer(builder);
     }
-    
+
     Renderer::~Renderer() {
         renderer->wait_for_destroy();
         renderer.reset();
@@ -59,7 +59,7 @@ namespace MatchEngine::Renderer {
         }
         picker = std::make_unique<GameObjectPicker>(renderer, *resource);
     }
-    
+
     void Renderer::render() {
         renderer->acquire_next_image();
         for (auto &subpass : subpasses) {
@@ -83,7 +83,7 @@ namespace MatchEngine::Renderer {
             picker->processPickTasks(renderer, in_flight_idnex);
         }
     }
- 
+
     void Renderer::pickGameObject(uint32_t x, uint32_t y, std::function<void(Game::GameObjectUUID uuid)> picked_callback, std::function<void()> miss_callback) {
         return picker->addPickTask({
             .x = x,
@@ -92,7 +92,7 @@ namespace MatchEngine::Renderer {
             .miss_callback = miss_callback,
         });
     }
- 
+
     void Renderer::reportSelectedGameObject(Game::GameObjectUUID uuid) {
         auto &map = global_runtime_context->render_system->getSwapData()->getMeshInstancePool()->game_object_uuid_to_mesh_instance_index_map;
         if (auto iter = map.find(uuid); iter != map.end()) {

@@ -45,11 +45,11 @@ namespace MatchEngine::Renderer {
             .attach_push_constants(constants)
             .compile();
     }
- 
+
     void GameObjectPicker::addPickTask(const PickTask &task) {
         pick_tasks.push_back(task);
     }
- 
+
     void GameObjectPicker::processPickTasks(std::shared_ptr<Match::Renderer> renderer, uint32_t in_flight_idnex) {
         for (auto &task : pick_tasks) {
             auto manager = global_runtime_context->render_system->getMatchAPIManager();
