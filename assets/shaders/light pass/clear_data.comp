@@ -1,0 +1,27 @@
+#version 450
+
+layout (std430, binding = 1) writeonly buffer TileViewZBuffer {
+    uvec2 tile_view_zs[];
+};
+
+layout (std430, binding = 2) writeonly buffer TilePointLightCountBuffer {
+    uint tile_point_light_counts[];
+};
+
+layout (push_constant) uniform Constants {
+    uvec2 image_size;
+    uvec2 tile_size;
+    uint light_count;
+};
+
+// 1.清除上一帧的剔除数据
+layout (local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
+void main() {
+    uvec2 pos = gl_GlobalInvocationID.xy;
+    if (pos.x < image_size.x && pos.y < image_size.y) {
+        uvec2 tile = uvec2(floor(vec2(pos) / 32.0));
+        uint tile_id = tile.x + tile.y * tile_size.x;
+        tile_view_zs[tile_id] = uvec2(uint(-1), 0);
+        tile_point_light_counts[tile_id] = 0;
+    }
+}

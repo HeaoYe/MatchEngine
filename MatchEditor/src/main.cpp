@@ -14,7 +14,7 @@ int main() {
 
     // 创建场景
     auto scene = scene_manager->createScene("My First Scene");
-    
+
     // 添加相机
     auto camera = scene->createGameObject("相机");
     camera->addComponet(new MatchEngine::Game::TransformComponent());
@@ -28,9 +28,9 @@ int main() {
     // 加载龙
     assets_system->setRootDir("Sandbox/resource");
     // 使用低模
-    // auto dragon_mesh_id = assets_system->loadMesh("dragon_lods.obj", { "dragon_LOD5" });
+    auto dragon_mesh_id = assets_system->loadMesh("dragon_lods.obj", { "dragon_LOD5" });
     // 使用高模+LOD
-    auto dragon_mesh_id = assets_system->loadMesh("dragon_lods.obj");
+    // auto dragon_mesh_id = assets_system->loadMesh("dragon_lods.obj");
     int n = 16, n2 = n / 2;
     // int n = 8, n2 = n / 2;
     for (int i = 0; i < n * n * n; i ++) {
@@ -41,7 +41,24 @@ int main() {
         dragon->addComponet(t);
         dragon->addComponet(new MatchEngine::Game::MeshComponent(dragon_mesh_id));
     }
-    
+
+    // 目前没有添加点光源, 所以是黑的
+    // 没有光源时,   在起点的帧率为 320~330FPS
+    // 1024个光源时, 在起点的帧率为 300~320FPS
+    // 几乎没影响
+    auto light_pool = MatchEngine::global_runtime_context->render_system->getSwapData()->getPointLightPool();
+    // 添加1024个光源!
+    std::uniform_real_distribution<float> random_light_pos(-9, 9);
+    std::uniform_real_distribution<float> random_light_radius(0.7, 2.4);
+    std::uniform_real_distribution<float> random_light_color(0, 1);
+    for (size_t i = 0; i < 1024; i ++) {
+        light_pool->createPointLight({
+            .position = { random_light_pos(mt), random_light_pos(mt), random_light_pos(mt) },
+            .radius = random_light_radius(mt),
+            .color = { random_light_color(mt), random_light_color(mt), random_light_color(mt) }
+        });
+    }
+
     // 在游戏引擎主循环前，初始化游戏引擎编辑器
     editor->initialize();
 

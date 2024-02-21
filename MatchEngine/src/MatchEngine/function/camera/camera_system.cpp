@@ -67,6 +67,9 @@ namespace MatchEngine {
             data_ptr->project = project;
             data_ptr->near = near;
             data_ptr->far = far;
+
+            auto p1 = data_ptr->project * data_ptr->view * glm::vec4(1, 1, near, 1);
+
             if (!fixed_clip) {
                 data_ptr = static_cast<CameraData *>(clip_camera->get_uniform_ptr());
                 data_ptr->project = project;

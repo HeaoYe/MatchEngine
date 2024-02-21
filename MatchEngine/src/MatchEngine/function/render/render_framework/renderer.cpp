@@ -1,6 +1,7 @@
 #include <MatchEngine/function/render/render_framework/renderer.hpp>
 #include <MatchEngine/function/render/render_framework/culling_pass.hpp>
 #include <MatchEngine/function/render/render_framework/visibility_pass.hpp>
+#include <MatchEngine/function/render/render_framework/light_pass.hpp>
 #include <MatchEngine/function/render/render_framework/mesh_pass.hpp>
 #include <MatchEngine/function/render/render_framework/outlining_pass.hpp>
 #include "internal.hpp"
@@ -20,6 +21,7 @@ namespace MatchEngine::Renderer {
 
         subpasses.push_back(std::make_unique<CullingPass>());
         subpasses.push_back(std::make_unique<VisibilityPass>());
+        subpasses.push_back(std::make_unique<LightPass>());
         subpasses.push_back(std::make_unique<MeshPass>());
         subpasses.push_back(std::make_unique<OutliningPass>());
 
@@ -27,7 +29,9 @@ namespace MatchEngine::Renderer {
             subpass->createRenderResource(*builder);
         }
         for (auto &subpass : subpasses) {
-            subpass->buildPassDescriptor(builder->add_subpass(subpass->getName()));
+            if (!subpass->isOnlyCompute()) {
+                subpass->buildPassDescriptor(builder->add_subpass(subpass->getName()));
+            }
         }
 
         renderer = global_runtime_context->render_system->getMatchFactory()->create_renderer(builder);
@@ -67,6 +71,9 @@ namespace MatchEngine::Renderer {
         }
         renderer->begin_render_pass();
         for (auto &subpass : subpasses) {
+            if (subpass->isOnlyCompute()) {
+                continue;
+            }
             renderer->continue_subpass_to(subpass->getName());
             subpass->executeRenderPass(renderer, *resource);
         }

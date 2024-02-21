@@ -13,6 +13,7 @@ namespace MatchEngine::Renderer {
         void postCreateRenderResource(std::shared_ptr<Match::Renderer> renderer, Resource &resource) override;
         void executeRenderPass(std::shared_ptr<Match::Renderer> renderer, Resource &resource) override;
     private:
+        std::shared_ptr<Match::PushConstants> constants;
         std::shared_ptr<Match::DescriptorSet> mesh_descriptor_set;
         std::shared_ptr<Match::GraphicsShaderProgram> mesh_shader_program;
     };

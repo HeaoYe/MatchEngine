@@ -439,17 +439,5 @@ namespace MatchEngine::Renderer {
         // 6.生成最终的IndirectCommand, 从模板IndirectCommand中剔除不绘制任何实例的IndirectCommand
         command_buffer.bindPipeline(vk::PipelineBindPoint::eCompute, generate_available_indirect_command_shader_program->pipeline);
         command_buffer.dispatch(std::ceil(primitive_count / 256.0), 1, 1);
-
-        vk::Event e;
-        // command_buffer.setEvent(, vk::PipelineStageFlags stageMask)
-
-        command_buffer.end();
-        vk::SubmitInfo submit_info {};
-        submit_info.setCommandBuffers(resource.culling_command_buffers.at(renderer->current_in_flight))
-            .setSignalSemaphores(resource.culling_finish_semaphores.at(renderer->current_in_flight));
-        resource.in_flight_wait_semaphore[renderer->current_in_flight].push_back(resource.culling_finish_semaphores.at(renderer->current_in_flight));
-        resource.in_flight_wait_stages[renderer->current_in_flight].push_back(vk::PipelineStageFlagBits::eDrawIndirect);
-
-        renderer->report_submit_info(submit_info);
     }
 }

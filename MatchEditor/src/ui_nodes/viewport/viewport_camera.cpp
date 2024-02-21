@@ -19,8 +19,8 @@ namespace MatchEditor {
         location = glm::vec3(0);
         yaw = 0;
         pitch = 0;
-        MatchEngine::UserInterface::camera_system->reportCameraViewMatrix(global_ui_context->viewport_camera_id, glm::lookAt<float, glm::defaultp>({ 0, 0, 0 }, { 0, 0, -1 }, { 0, 1, 0 }), true);
-        MatchEngine::UserInterface::camera_system->reportCameraProjectMatrix(global_ui_context->viewport_camera_id, glm::perspectiveFov<float>(glm::radians(60.0f), 1920, 1080, 0.0001, 1000), true);
+        updateViewMatrix();
+        MatchEngine::UserInterface::camera_system->reportCameraProjectMatrix(global_ui_context->viewport_camera_id, glm::perspectiveFov<float>(glm::radians(60.0f), 1920, 1080, 0.01, 100), 0.01, 100, true);
     }
 
     void ViewportCamera::onTick(float dt) {
@@ -70,5 +70,11 @@ namespace MatchEditor {
     void ViewportCamera::updateViewMatrix() {
         auto view_direction = glm::rotateY(glm::rotateX(glm::vec3(0, 0, 1), glm::radians(pitch)), glm::radians(yaw));
         MatchEngine::UserInterface::camera_system->reportCameraViewMatrix(global_ui_context->viewport_camera_id, glm::lookAt(location, location + view_direction, { 0, 1, 0 }), true);
+        auto data = MatchEngine::UserInterface::camera_system->quertyCameraData(global_ui_context->viewport_camera_id);
+        auto p1 = data->view * glm::vec4(1, 1, 1, 1);
+        p1 = data->view * glm::vec4(2, 1, 2, 1);
+        p1 = data->view * glm::vec4(2, 3, 99, 1);
+        p1 = data->view * glm::vec4(2, 3, 0, 1);
+        p1 = data->view * glm::vec4(1, 3, -1, 1);
     }
 }

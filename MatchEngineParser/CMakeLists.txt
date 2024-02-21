@@ -3,7 +3,7 @@ project(MatchEngineParser)
 function (MatchEngineParseHeaders TARGET_NAME INPUT_DIR OUTPUT_DIR)
     file(GLOB_RECURSE headers CONFIGURE_DEPENDS ${INPUT_DIR}/*.hpp ${INPUT_DIR}/*.h $ENV{MATCHENGINE_INCLUDE_DIR}/*.hpp $ENV{MATCHENGINE_INCLUDE_DIR}/*.h)
 
-    find_program(PYTHON_BIN REQUIRED python3)
+    set(PYTHON_BIN python)
 
     add_custom_target(${TARGET_NAME}_AUTO_GENERATE)
     set(ENV{${TARGET_NAME}_OUTPUT_DIR} ${CMAKE_CURRENT_LIST_DIR}/${OUTPUT_DIR})

@@ -14,7 +14,10 @@ namespace MatchEngine {
         void render();
         void waitRenderDevice();
 
-        uint32_t getMaxMeshInstanceCount() const { return 16384; }
+        // 最大MeshInstance数
+        uint32_t getMaxMeshInstanceCount() const{ return 16384; }
+        // 最大点光源数
+        uint32_t getMaxPointLightCount() const { return 1024; }
 
         PointerWrapper<Match::APIManager> getMatchAPIManager() { return manager; }
         PointerWrapper<Match::ResourceFactory> getMatchFactory() { return factory.get(); }

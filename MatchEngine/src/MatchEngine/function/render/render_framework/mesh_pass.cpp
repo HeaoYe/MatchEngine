@@ -8,7 +8,7 @@ namespace MatchEngine::Renderer {
             .wait_for(
                 "visibility pass",
                 {
-                    .stage = vk::PipelineStageFlagBits::eColorAttachmentOutput,
+                    .stage = vk::PipelineStageFlagBits::eFragmentShader,
                     .access = vk::AccessFlagBits::eColorAttachmentRead,
                 },
                 {
@@ -22,6 +22,14 @@ namespace MatchEngine::Renderer {
         auto manager = global_runtime_context->render_system->getMatchAPIManager();
         auto factory = global_runtime_context->render_system->getMatchFactory();
 
+        constants = factory->create_push_constants(
+            Match::ShaderStage::eFragment,
+            {
+                { "tile_size", Match::ConstantType::eUint32x2 },
+            });
+        glm::uvec2 tile_size = { resource.tile_x, resource.tile_y };
+        constants->push_constant("tile_size", &tile_size);
+
         mesh_descriptor_set = factory->create_descriptor_set(renderer);
         mesh_descriptor_set->add_descriptors({
             { Match::ShaderStage::eFragment, 0, Match::DescriptorType::eInputAttachment },
@@ -34,6 +42,9 @@ namespace MatchEngine::Renderer {
             { Match::ShaderStage::eFragment, 7, Match::DescriptorType::eStorageBuffer },
             { Match::ShaderStage::eFragment, 8, Match::DescriptorType::eStorageBuffer },
             { Match::ShaderStage::eFragment, 9, Match::DescriptorType::eStorageBuffer },
+            { Match::ShaderStage::eFragment, 10, Match::DescriptorType::eStorageBuffer },
+            { Match::ShaderStage::eFragment, 11, Match::DescriptorType::eStorageBuffer },
+            { Match::ShaderStage::eFragment, 12, Match::DescriptorType::eStorageBuffer },
         }).allocate()
             .bind_input_attachment(0, "visibility buffer", factory->create_sampler({
                 .mag_filter = Match::SamplerFilter::eNearest,
@@ -50,13 +61,17 @@ namespace MatchEngine::Renderer {
             .bind_storage_buffer(6, global_runtime_context->assets_system->getMeshPool()->color_buffer)
             .bind_storage_buffer(7, resource.instance_datas_buffer)
             .bind_storage_buffer(8, resource.counts_buffer)
-            .bind_storage_buffer(9, resource.available_indirect_commands_buffer);
+            .bind_storage_buffer(9, resource.available_indirect_commands_buffer)
+            .bind_storage_buffer(10, resource.tile_point_light_counts_buffer)
+            .bind_storage_buffer(11, resource.tile_point_light_indices_buffer)
+            .bind_storage_buffer(12, global_runtime_context->render_system->getSwapData()->getPointLightPool()->point_light_buffer);
 
         auto vert_shader = factory->compile_shader(getName() + "/shader.vert", Match::ShaderStage::eVertex);
         auto frag_shader = factory->compile_shader(getName() + "/shader.frag", Match::ShaderStage::eFragment);
         mesh_shader_program = factory->create_shader_program(renderer, name);
         mesh_shader_program->attach_vertex_shader(vert_shader)
             .attach_fragment_shader(frag_shader)
+            .attach_push_constants(constants)
             .attach_descriptor_set(mesh_descriptor_set)
             .compile({
                 .cull_mode = Match::CullMode::eNone,

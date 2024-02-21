@@ -7,7 +7,7 @@ namespace MatchEngine::Renderer {
     class CullingPass : public Subpass {
         NoCopyMoveConstruction(CullingPass)
     public:
-        CullingPass() : Subpass("culling pass") {}
+        CullingPass() : Subpass("culling pass", true) {}
 
         void createRenderResource(Match::RenderPassBuilder &builder) override;
         void postCreateRenderResource(std::shared_ptr<Match::Renderer> renderer, Resource &resource) override;

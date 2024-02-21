@@ -1,3 +1,4 @@
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <MatchEngine/game_framework/component/camera/orthographic_camera.hpp>
 #include <glm/ext/matrix_clip_space.hpp>
 #include "internal.hpp"

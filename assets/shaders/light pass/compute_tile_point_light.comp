@@ -1,0 +1,101 @@
+#version 450
+
+#extension GL_GOOGLE_include_directive : require
+
+#include "point_light.glsl"
+
+layout (std430, binding = 1) readonly buffer TileViewZBuffer {
+    uvec2 tile_view_zs[];
+};
+
+layout (std430, binding = 2) writeonly buffer TilePointLightCountBuffer {
+    uint tile_point_light_counts[];
+};
+
+layout (std430, binding = 3) writeonly buffer TilePointLightIndicesBuffer {
+    uint tile_point_light_indices[];
+};
+
+layout (std430, binding = 4) readonly buffer PointLightPool {
+    PointLight point_lights[];
+};
+
+layout (binding = 5) uniform Camera {
+    mat4 view;
+    mat4 project;
+    float near;
+    float far;
+} camera;
+
+layout (push_constant) uniform Constants {
+    uvec2 image_size;
+    uvec2 tile_size;
+    uint light_count;
+};
+
+// 3.遍历光源 -> 遍历格子 -> 检查是否剔除 -> 写入缓存
+layout (local_size_x = 32, local_size_y = 1, local_size_z = 1) in;
+void main() {
+    uint light_id = gl_GlobalInvocationID.x;
+    if (light_id >= light_count) {
+        return;
+    }
+
+    PointLight light = point_lights[light_id];
+    vec4 light_view_pos = camera.view * vec4(light.position__radius.xyz, 1);
+    float light_radius = light.position__radius.w;
+
+    float light_distance = length(light_view_pos.xyz);
+    vec3 light_center = light_view_pos.xyz / light_distance;
+    float light_sin = clamp(light_radius / light_distance, 0.0, 1.0);
+    float light_cos = sqrt(max(1 - light_sin * light_sin, 0));
+
+    light_view_pos.z *= -1;
+    mat4 inverse_project = inverse(camera.project);
+    float w = -camera.near * camera.project[3][2];
+    for (uint tile_y = 0; tile_y < tile_size.y; tile_y ++) {
+        for (uint tile_x = 0; tile_x < tile_size.x; tile_x ++) {
+            uint tile_id = tile_x + tile_y * tile_size.x;
+            uvec2 view_z_clamp = tile_view_zs[tile_id];
+            vec2 view_z = ((vec2(view_z_clamp) / float(1e8)) * (camera.far - camera.near)) + camera.near;
+
+            // 基于Tile的深度进行剔除
+            uint res = uint(step(view_z.x, light_view_pos.z + light_radius));
+            res *= uint(step(light_view_pos.z - light_radius, view_z.y));
+
+            // 基于Tile和Light的圆锥包围体进行剔除
+            vec2 tile_screen_pos = vec2(tile_x, tile_y) * 32.0;
+            vec4 tile_sides[4] = vec4[](
+                vec4(tile_screen_pos, 0, 1),
+                vec4(vec2(tile_screen_pos.x + 32.0, tile_screen_pos.y), 0, 1),
+                vec4(vec2(tile_screen_pos.x, tile_screen_pos.y + 32.0), 0, 1),
+                vec4(tile_screen_pos + 32.0, 0, 1)
+            );
+
+            for (int i = 0; i < 4; i ++) {
+                tile_sides[i].xy /= image_size;
+                tile_sides[i].xy = tile_sides[i].xy * 2 - 1;
+                tile_sides[i].y *= -1;
+                tile_sides[i] = inverse_project * (tile_sides[i] * w);
+                tile_sides[i].xyz = normalize(tile_sides[i].xyz);
+            }
+
+            vec3 tile_center = normalize(tile_sides[0].xyz + tile_sides[1].xyz + tile_sides[2].xyz + tile_sides[3].xyz);
+            float tile_cos = min(min(min(dot(tile_center, tile_sides[0].xyz), dot(tile_center, tile_sides[1].xyz)), dot(tile_center, tile_sides[2].xyz)), dot(tile_center, tile_sides[3].xyz));
+            float tile_sin = sqrt(max(1 - tile_cos * tile_cos, 0));
+
+            float light_tile_cos = dot(light_center, tile_center);
+            float light_tile_sin = sqrt(max(1 - light_tile_cos * light_tile_cos, 0));
+            float sum_cos = (light_radius > light_distance) ? -2.0 : (tile_cos * light_cos - tile_sin * light_sin);
+
+            res *= uint(step(sum_cos, light_tile_cos));
+
+            // 将剔除结果写入缓存
+            if (res == 1) {
+                uint index = atomicAdd(tile_point_light_counts[tile_id], 1);
+                uint offset = tile_id * 1024;
+                tile_point_light_indices[offset + index] = light_id;
+            }
+        }
+    }
+}

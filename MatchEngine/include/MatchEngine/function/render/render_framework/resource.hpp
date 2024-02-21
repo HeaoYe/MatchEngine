@@ -33,6 +33,14 @@ namespace MatchEngine::Renderer {
         std::vector<vk::Semaphore> culling_finish_semaphores;
         // ------------
 
+        // LightPass
+        uint tile_pixel_size;
+        uint32_t tile_x, tile_y;
+        std::shared_ptr<Match::InFlightBuffer> tile_point_light_counts_buffer;
+        std::shared_ptr<Match::InFlightBuffer> tile_point_light_indices_buffer;
+        std::shared_ptr<Match::InFlightBuffer> tile_view_z_buffer;
+        // ------------
+
         // OutliningPass
         uint32_t selected_mesh_instance_index;
         std::shared_ptr<Match::InFlightBuffer> outlining_buffer;

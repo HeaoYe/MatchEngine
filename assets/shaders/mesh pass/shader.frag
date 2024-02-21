@@ -2,8 +2,8 @@
 
 #extension GL_GOOGLE_include_directive : require
 
-#include "shading.glsl"
 #include "../utils.glsl"
+#include "../light pass/point_light.glsl"
 
 struct VkDrawIndexedIndirectCommand {
     uint index_count;
@@ -56,8 +56,26 @@ layout (std430, binding = 9) readonly buffer AvailableIndirectCommandsBuffer {
     VkDrawIndexedIndirectCommand available_indirect_commands_buffer[];
 };
 
+layout (std430, binding = 10) readonly buffer TilePointLightCountBuffer {
+    uint tile_point_light_counts[];
+};
+
+layout (std430, binding = 11) readonly buffer TilePointLightIndicesBuffer {
+    uint tile_point_light_indices[];
+};
+
+layout (std430, binding = 12) readonly buffer PointLightPool {
+    PointLight point_lights[];
+};
+
+layout (push_constant) uniform Constants {
+    uvec2 tile_size;
+};
+
 layout (location = 0) in vec2 ndc_pos;
 layout (location = 0) out vec4 out_color;
+
+#include "shading.glsl"
 
 vec2 interpolate_vec2(mat3x2 attributes, vec3 db_dx, vec3 db_dy, vec2 delta) {
 	vec3 attr0 = vec3(attributes[0].x, attributes[1].x, attributes[2].x);
