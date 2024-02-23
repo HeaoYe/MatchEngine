@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <initializer_list>
+#include <type_traits>
 
 namespace MatchEngine::Core {
     /**
@@ -14,17 +15,18 @@ namespace MatchEngine::Core {
      */
     template <typename _T>
     class TArray : std::vector<_T> {
-        using size_type = size_t;
         using T = std::decay_t<_T>;
+        using size_type = size_t;
     public:
+        TArray() : std::vector<_T>() {}
         TArray(const std::initializer_list<T> &initializer_list) : std::vector<T>(initializer_list) {}
     public:
-        void add(const T &t) {
-            std::vector<_T>::push_back(t);
+        void add(const T &element) {
+            std::vector<_T>::push_back(element);
         }
 
-        void add(T &&t) {
-            std::vector<_T>::push_back(t);
+        void add(T &&element) {
+            std::vector<_T>::push_back(element);
         }
 
         void remove(size_type index) {
