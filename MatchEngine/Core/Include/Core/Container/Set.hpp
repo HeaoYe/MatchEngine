@@ -20,6 +20,9 @@ namespace MatchEngine::Core {
         using size_type = size_t;
     public:
         TSet() : std::set<_T, Compare>() {}
+        TSet(const TSet &other) : std::set<_T, Compare>(Copy(other)) {}
+        TSet(TSet &&other) : std::set<_T, Compare>(Move(other)) {}
+
         TSet(const std::initializer_list<T> &initializer_list) : std::set<_T, Compare>(initializer_list) {}
     public:
         void add(const T &element) {

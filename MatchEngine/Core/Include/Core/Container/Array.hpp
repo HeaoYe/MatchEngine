@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../CopyMove/CopyMove.hpp"
 #include <vector>
 #include <initializer_list>
 #include <type_traits>
@@ -19,6 +20,9 @@ namespace MatchEngine::Core {
         using size_type = size_t;
     public:
         TArray() : std::vector<_T>() {}
+        TArray(const TArray &other) : std::vector<_T>(Copy(other)) {}
+        TArray(TArray &&other) : std::vector<_T>(Move(other)) {}
+
         TArray(const std::initializer_list<T> &initializer_list) : std::vector<T>(initializer_list) {}
     public:
         void add(const T &element) {

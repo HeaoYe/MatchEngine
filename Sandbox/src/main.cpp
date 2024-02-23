@@ -10,7 +10,12 @@ int main() {
     for (auto num : array) {
         printf("TArray: %d\n", num);
     }
+    MatchEngine::Core::TArray<int> array2 = array;
+    MatchEngine::Core::TArray<int> array3 = std::move(array2);
     array.clear();
+    printf("%ld %ld\n", array2.size(), array3.size());
+    array3.clear();
+    printf("%ld %ld\n", array2.size(), array3.size());
 
     MatchEngine::Core::TPair<int, float> pair { 1, 0.1f };
     printf("TPair: %d, %f\n", pair.first, pair.second);
