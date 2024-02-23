@@ -1,8 +1,12 @@
 #pragma once
 
-#include <set>
+#include "Core/Defines.hpp"
+#include "Core/CopyMove/CopyMove.hpp"
+
 #include <initializer_list>
 #include <type_traits>
+
+#include <set>
 
 namespace MatchEngine::Core {
     /**
@@ -22,8 +26,9 @@ namespace MatchEngine::Core {
         TSet() : std::set<_T, Compare>() {}
         TSet(const TSet &other) : std::set<_T, Compare>(Copy(other)) {}
         TSet(TSet &&other) : std::set<_T, Compare>(Move(other)) {}
+        DefineDefaultAssignmentOperator(TSet)
 
-        TSet(const std::initializer_list<T> &initializer_list) : std::set<_T, Compare>(initializer_list) {}
+        TSet(std::initializer_list<T> initializer_list) : std::set<_T, Compare>(initializer_list) {}
     public:
         void add(const T &element) {
             std::set<_T, Compare>::insert(element);
@@ -57,11 +62,11 @@ namespace MatchEngine::Core {
             return std::set<_T, Compare>::end();
         }
 
-        auto &at(size_type index) {
+        T &at(size_type index) {
             return std::set<_T, Compare>::at(index);
         }
 
-        const auto &at(size_type index) const {
+        const T &at(size_type index) const {
             return std::set<_T, Compare>::at(index);
         }
     };

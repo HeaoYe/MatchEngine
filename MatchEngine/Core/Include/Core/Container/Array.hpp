@@ -1,9 +1,12 @@
 #pragma once
 
-#include "../CopyMove/CopyMove.hpp"
-#include <vector>
+#include "Core/Defines.hpp"
+#include "Core/CopyMove/CopyMove.hpp"
+
 #include <initializer_list>
 #include <type_traits>
+
+#include <vector>
 
 namespace MatchEngine::Core {
     /**
@@ -22,8 +25,9 @@ namespace MatchEngine::Core {
         TArray() : std::vector<_T>() {}
         TArray(const TArray &other) : std::vector<_T>(Copy(other)) {}
         TArray(TArray &&other) : std::vector<_T>(Move(other)) {}
+        DefineDefaultAssignmentOperator(TArray)
 
-        TArray(const std::initializer_list<T> &initializer_list) : std::vector<T>(initializer_list) {}
+        TArray(std::initializer_list<T> initializer_list) : std::vector<T>(initializer_list) {}
     public:
         void add(const T &element) {
             std::vector<_T>::push_back(element);
@@ -53,11 +57,11 @@ namespace MatchEngine::Core {
             return std::vector<_T>::end();
         }
 
-        auto &at(size_type index) {
+        T &at(size_type index) {
             return std::vector<_T>::at(index);
         }
 
-        const auto &at(size_type index) const {
+        const T &at(size_type index) const {
             return std::vector<_T>::at(index);
         }
     };

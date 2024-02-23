@@ -1,5 +1,8 @@
 #pragma once
 
+#include "Core/Defines.hpp"
+#include "Core/CopyMove/CopyMove.hpp"
+
 #include <type_traits>
 
 namespace MatchEngine::Core {
@@ -19,6 +22,7 @@ namespace MatchEngine::Core {
         TPair() : first(), second() {}
         TPair(const TPair &other) : first(Copy(other.first)), second(Copy(other.second)) {}
         TPair(TPair &&other) : first(Move(other.first)), second(Move(other.second)) {}
+        DefineDefaultAssignmentOperator(TPair)
 
         TPair(T1 &&t1, T2 &&t2) : first(t1), second(t2) {}
     public:
