@@ -11,26 +11,48 @@ int main() {
         printf("TArray: %d\n", num);
     }
     MatchEngine::Core::TArray<int> array2 = array;
-    MatchEngine::Core::TArray<int> array3 = std::move(array2);
+    MatchEngine::Core::TArray<int> array3;
+    array3 = MatchEngine::Core::Move(array2);
     array.clear();
     printf("%ld %ld\n", array2.size(), array3.size());
     array3.clear();
     printf("%ld %ld\n", array2.size(), array3.size());
 
-    MatchEngine::Core::TPair<int, float> pair { 1, 0.1f };
+    MatchEngine::Core::TPair<int, float> pair { 1, 0.1f }, pair2, pair3;
+    pair2 = pair;
+    pair3 = MatchEngine::Core::Move(pair2);
     printf("TPair: %d, %f\n", pair.first, pair.second);
 
-    MatchEngine::Core::TSet<double> set;
+    MatchEngine::Core::TSet<double> set, set1, set2;
     set.add(1.0);
     set.add(2.0);
     set.add(1.5);
     set.add(1.5);
     set.add(2.5);
+    set1 = set;
+    set2 = MatchEngine::Core::Move(set1);
     printf("TSet Size: %ld\n", array.size());
     set.remove(1.0);
     for (auto num : set) {
         printf("TSet: %lf\n", num);
     }
     set.clear();
+
+    MatchEngine::Core::TMap<float, char> map {
+        { 0.1f, 'a' },
+        { 0.2f, 'a' },
+        { 0.3f, 'a' }
+    };
+
+    printf("%c\n", map.at(0.2f));
+    map.remove(0.2f);
+    for (auto &[key, value] : map) {
+        printf("%f: %c\n", key, value);
+    }
+
+    MatchEngine::Core::TMap<float, char> map1, map2;
+    map1 = MatchEngine::Core::Copy(map2);
+    map2 = MatchEngine::Core::Move(map1);
+
     return 0;
 }
