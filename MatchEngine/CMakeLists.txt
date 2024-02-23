@@ -21,3 +21,5 @@ function(MatchEngine_LinkLibraries TargetName)
     get_property(Property_MatchEngineLibraries GLOBAL PROPERTY MatchEngineLibraries)
     target_link_libraries(${TargetName} PRIVATE ${Property_MatchEngineLibraries})
 endfunction()
+
+add_subdirectory(Core)
