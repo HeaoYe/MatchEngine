@@ -51,8 +51,10 @@ int main() {
     }
 
     MatchEngine::Core::TMap<float, char> map1, map2;
-    map1 = MatchEngine::Core::Copy(map2);
+    map1 = MatchEngine::Core::Copy(map);
     map2 = MatchEngine::Core::Move(map1);
+    auto result_pair = map2.find(0.1f);
+    printf("%f, %c\n", result_pair.first, result_pair.second);
 
     return 0;
 }

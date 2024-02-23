@@ -64,5 +64,9 @@ namespace MatchEngine::Core {
         const Value &at(const Key &key) const {
             return std::map<_Key, _Value, Compare>::at(key);
         }
+
+        KeyValuePair find(const Key &key) const {
+            return KeyValuePair(*std::map<_Key, _Value, Compare>::find(key));
+        }
     };
 }

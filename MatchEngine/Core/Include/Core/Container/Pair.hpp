@@ -5,6 +5,8 @@
 
 #include <type_traits>
 
+#include <utility>
+
 namespace MatchEngine::Core {
     /**
      * @brief 一对数据, 相当于std::pair
@@ -28,5 +30,17 @@ namespace MatchEngine::Core {
     public:
         T1 first;
         T2 second;
+    public:
+        /**
+         * @brief 仅为了兼容std::pair, 请不要使用这个构造函数
+         *
+         */
+        constexpr TPair(const std::pair<T1, T2> &other) : first(Copy(other.first)), second(Copy(other.second)) {}
+
+        /**
+         * @brief 仅为了兼容std::pair, 请不要使用这个构造函数
+         *
+         */
+        constexpr TPair(std::pair<T1, T2> &&other) : first(Move(other.first)), second(Move(other.second)) {}
     };
 }
