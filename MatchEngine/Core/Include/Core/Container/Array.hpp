@@ -22,12 +22,12 @@ namespace MatchEngine::Core {
         using T = std::decay_t<_T>;
         using size_type = size_t;
     public:
-        TArray() : std::vector<_T>() {}
-        TArray(const TArray &other) : std::vector<_T>(Copy(other)) {}
-        TArray(TArray &&other) : std::vector<_T>(Move(other)) {}
-        DefineDefaultAssignmentOperator(TArray)
+        constexpr TArray() : std::vector<_T>() {}
+        constexpr TArray(const TArray &other) : std::vector<_T>(Copy(other)) {}
+        constexpr TArray(TArray &&other) : std::vector<_T>(Move(other)) {}
+        DefineDefaultConstexprAssignmentOperator(TArray)
 
-        TArray(std::initializer_list<T> initializer_list) : std::vector<T>(initializer_list) {}
+        constexpr TArray(std::initializer_list<T> initializer_list) : std::vector<T>(initializer_list) {}
     public:
         void add(const T &element) {
             std::vector<_T>::push_back(element);
