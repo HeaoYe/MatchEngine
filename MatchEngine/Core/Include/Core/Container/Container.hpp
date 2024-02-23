@@ -4,5 +4,6 @@
 
 #include "Array.hpp"
 #include "Pair.hpp"
+#include "Set.hpp"
 
 // IWYU pragma: end_exports
