@@ -26,12 +26,12 @@ namespace MatchEngine::Core {
         using KeyValuePair = TPair<const Key, Value>;
         using size_type = size_t;
     public:
-        TMap() : std::map<_Key, _Value, Compare>() {}
-        TMap(const TMap &other) : std::map<_Key, _Value, Compare>(Copy(other)) {}
-        TMap(TMap &&other) : std::map<_Key, _Value, Compare>(Move(other)) {}
-        DefineDefaultAssignmentOperator(TMap)
+        constexpr TMap() : std::map<_Key, _Value, Compare>() {}
+        constexpr TMap(const TMap &other) : std::map<_Key, _Value, Compare>(Copy(other)) {}
+        constexpr TMap(TMap &&other) : std::map<_Key, _Value, Compare>(Move(other)) {}
+        DefineDefaultConstexprAssignmentOperator(TMap)
 
-        TMap(std::initializer_list<std::pair<const Key, Value>> initializer_list) : std::map<_Key, _Value, Compare>(initializer_list) {}
+        constexpr TMap(std::initializer_list<std::pair<const Key, Value>> initializer_list) : std::map<_Key, _Value, Compare>(initializer_list) {}
     public:
         void add(const Key &key, const Value &value) {
             std::map<_Key, _Value, Compare>::insert(key, value);

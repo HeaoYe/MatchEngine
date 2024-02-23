@@ -23,12 +23,12 @@ namespace MatchEngine::Core {
         using T = std::decay_t<_T>;
         using size_type = size_t;
     public:
-        TSet() : std::set<_T, Compare>() {}
-        TSet(const TSet &other) : std::set<_T, Compare>(Copy(other)) {}
-        TSet(TSet &&other) : std::set<_T, Compare>(Move(other)) {}
-        DefineDefaultAssignmentOperator(TSet)
+        constexpr TSet() : std::set<_T, Compare>() {}
+        constexpr TSet(const TSet &other) : std::set<_T, Compare>(Copy(other)) {}
+        constexpr TSet(TSet &&other) : std::set<_T, Compare>(Move(other)) {}
+        DefineDefaultConstexprAssignmentOperator(TSet)
 
-        TSet(std::initializer_list<T> initializer_list) : std::set<_T, Compare>(initializer_list) {}
+        constexpr TSet(std::initializer_list<T> initializer_list) : std::set<_T, Compare>(initializer_list) {}
     public:
         void add(const T &element) {
             std::set<_T, Compare>::insert(element);
