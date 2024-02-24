@@ -1,7 +1,8 @@
 #pragma once
 
 #include "Core/Defines.hpp"
-#include "Core/CopyMove/CopyMove.hpp"
+#include "Core/Misc/Copy.hpp"
+#include "Core/Misc/Move.hpp"
 #include "Pair.hpp"
 
 #include <type_traits>
