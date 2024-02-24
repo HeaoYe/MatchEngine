@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <cstdint>
 
 namespace MatchEngine::Core {
     /**
@@ -11,9 +12,15 @@ namespace MatchEngine::Core {
     class IDelegate {
     public:
         using FunctionType = std::function<ReturnType(ArgsType ...)>;
+        using DelegateHandleType = uint64_t;
     public:
-        virtual void bind(const FunctionType &) = 0;
-        virtual void bind(FunctionType &&) = 0;
+        virtual DelegateHandleType bind(const FunctionType &) = 0;
+        virtual DelegateHandleType bind(FunctionType &&) = 0;
+
+        virtual void removeDelegateFunction(DelegateHandleType handle) = 0;
+
         virtual ReturnType broadcast(ArgsType &&...args) = 0;
+
+        virtual bool hasDelegateFunction(DelegateHandleType handle) = 0;
     };
 }
