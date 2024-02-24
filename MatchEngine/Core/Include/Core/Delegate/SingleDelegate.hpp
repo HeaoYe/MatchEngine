@@ -102,9 +102,9 @@ namespace MatchEngine::Core {
             return *this;
         }
 
-        TSingleDelegate(const FunctionType &function) : function(Copy(function)), critical_section() {}
+        TSingleDelegate(const FunctionType &function) : function(Copy(function)), handle_allocator(), critical_section() {}
 
-        TSingleDelegate(FunctionType &&function) : function(Move(function)), critical_section() {}
+        TSingleDelegate(FunctionType &&function) : function(Move(function)), handle_allocator(), critical_section() {}
     public:
         DelegateHandleType bind(const FunctionType &function) override {
             auto scope_lock = this->critical_section.getScopeLock();
