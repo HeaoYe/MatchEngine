@@ -1,7 +1,9 @@
 #pragma once
 
 #include "IDelegate.hpp"
-#include "Core/CopyMove/CopyMove.hpp"
+#include "Core/Misc/Copy.hpp"
+#include "Core/Misc/Move.hpp"
+#include "Core/Misc/Forward.hpp"
 #include "Core/Thread/ThreadSafetyMode.hpp"
 #include "Core/Thread/CriticalSection.hpp"
 
