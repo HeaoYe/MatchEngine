@@ -1,6 +1,9 @@
 #include <Core/Container/Container.hpp>
 #include <Core/Delegate/Delegate.hpp>
-#include "stdio.h"
+#include <Core/Misc/Misc.hpp>
+
+#include <ranges>
+#include <cstdio>
 
 int main() {
     MatchEngine::Core::TArray<int> array { 1, 2, 3, 4 };
@@ -68,6 +71,14 @@ int main() {
         printf("Delegate2: %d, %d, %d\n", a, b, c);
     });
     delegate->broadcast(1, 4, 2);
+
+    MatchEngine::Core::THandleAllocator<char, MatchEngine::Core::ThreadSafetyMode::eThreadSafe> haTS;
+    MatchEngine::Core::THandleAllocator<char, MatchEngine::Core::ThreadSafetyMode::eNotThreadSafe> haNTS;
+    haNTS = Move(haTS);
+    for (auto i : std::ranges::views::iota(0, 512)) {
+        printf("%c ", haNTS.allocate());
+    }
+    printf("\n");
 
     return 0;
 }
