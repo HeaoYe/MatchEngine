@@ -13,16 +13,6 @@ namespace MatchEngine::Core {
     };
 
     /**
-     * @brief 线程安全结模式构体, 不是线程安全
-     *
-     * 用法: template <..., typename ...Ts, typename ThreadSafetyModeStruct>
-     *
-     */
-    struct ThreadSafetyModeNotThreadSafeStruct {
-        static constexpr ThreadSafetyMode SafetyMode = ThreadSafetyMode::eNotThreadSafe;
-    };
-
-    /**
      * @brief 线程安全结模式构体, 线程安全
      *
      * 用法: template <..., typename ...Ts, typename ThreadSafetyModeStruct>
@@ -32,4 +22,13 @@ namespace MatchEngine::Core {
         static constexpr ThreadSafetyMode SafetyMode = ThreadSafetyMode::eThreadSafe;
     };
 
+    /**
+     * @brief 线程安全结模式构体, 非线程安全
+     *
+     * 用法: template <..., typename ...Ts, typename ThreadSafetyModeStruct>
+     *
+     */
+    struct ThreadSafetyModeNotThreadSafeStruct {
+        static constexpr ThreadSafetyMode SafetyMode = ThreadSafetyMode::eNotThreadSafe;
+    };
 }
