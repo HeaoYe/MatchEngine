@@ -27,7 +27,10 @@ namespace MatchEngine::Core {
         constexpr TPair(TPair &&other) : first(Move(other.first)), second(Move(other.second)) {}
         DefineDefaultConstexprAssignmentOperator(TPair)
 
-        constexpr TPair(T1 &&t1, T2 &&t2) : first(t1), second(t2) {}
+        constexpr TPair(const T1 &t1, const T2 &t2) : first(Copy(t1)), second(Copy(t2)) {}
+        constexpr TPair(const T1 &t1, T2 &&t2) : first(Copy(t1)), second(Move(t2)) {}
+        constexpr TPair(T1 &&t1, const T2 &t2) : first(Move(t1)), second(Copy(t2)) {}
+        constexpr TPair(T1 &&t1, T2 &&t2) : first(Move(t1)), second(Move(t2)) {}
     public:
         T1 first;
         T2 second;
