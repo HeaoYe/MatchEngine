@@ -1,6 +1,7 @@
 #pragma once
 
 #include "IDelegate.hpp"
+#include "Core/Defines.hpp"
 #include "Core/Misc/Copy.hpp"
 #include "Core/Misc/Move.hpp"
 #include "Core/Misc/Forward.hpp"
