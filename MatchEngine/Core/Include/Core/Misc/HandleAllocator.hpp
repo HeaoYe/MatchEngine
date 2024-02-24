@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Core/Defines.hpp"
 #include "Core/Thread/ThreadSafetyMode.hpp"
 
 #include <atomic>
@@ -32,7 +31,15 @@ namespace MatchEngine::Core {
         THandleAllocator(THandleAllocator &&other) : current_handle(other.current_handle.load()) {
             other.current_handle.exchange(InvalidHandle);
         }
-        DefineDefaultAssignmentOperator(THandleAllocator)
+        THandleAllocator &operator=(const THandleAllocator &other) {
+            this->current_handle.exchange(other.current_handle.load());
+            return *this;
+        }
+        THandleAllocator &operator=(THandleAllocator &&other) {
+            this->current_handle.exchange(other.current_handle.load());
+            other.current_handle.exchange(THandleAllocator::InvalidHandle);
+            return *this;
+        }
 
         THandleAllocator(const THandleAllocator<HandleType, ThreadSafetyMode::eNotThreadSafe> &other) : current_handle(other.current_handle) {}
         THandleAllocator(THandleAllocator<HandleType, ThreadSafetyMode::eNotThreadSafe> &&other) : current_handle(other.current_handle) {
@@ -76,7 +83,15 @@ namespace MatchEngine::Core {
         THandleAllocator(THandleAllocator &&other) : current_handle(other.current_handle) {
             other.current_handle = InvalidHandle;
         }
-        DefineDefaultAssignmentOperator(THandleAllocator)
+        THandleAllocator &operator=(const THandleAllocator &other) {
+            this->current_handle = other.current_handle;
+            return *this;
+        }
+        THandleAllocator &operator=(THandleAllocator &&other) {
+            this->current_handle = other.current_handle;
+            other.current_handle = THandleAllocator::InvalidHandle;
+            return *this;
+        }
 
         THandleAllocator(const THandleAllocator<HandleType, ThreadSafetyMode::eThreadSafe> &other) : current_handle(other.current_handle.load()) {}
         THandleAllocator(THandleAllocator<HandleType, ThreadSafetyMode::eThreadSafe> &&other) : current_handle(other.current_handle.load()) {
