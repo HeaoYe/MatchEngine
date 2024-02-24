@@ -35,7 +35,19 @@ namespace MatchEngine::Core {
         constexpr TMap(std::initializer_list<std::pair<const Key, Value>> initializer_list) : std::map<_Key, _Value, Compare>(initializer_list) {}
     public:
         void add(const Key &key, const Value &value) {
-            std::map<_Key, _Value, Compare>::insert(key, value);
+            std::map<_Key, _Value, Compare>::insert(std::make_pair(Copy(key), Copy(value)));
+        }
+
+        void add(const Key &key, Value &&value) {
+            std::map<_Key, _Value, Compare>::insert(std::make_pair(Copy(key), Move(value)));
+        }
+
+        void add(Key &&key, const Value &value) {
+            std::map<_Key, _Value, Compare>::insert(std::make_pair(Move(key), Copy(value)));
+        }
+
+        void add(Key &&key, Value &&value) {
+            std::map<_Key, _Value, Compare>::insert(std::make_pair(Move(key), Move(value)));
         }
 
         void remove(const Key &key) {
@@ -64,6 +76,10 @@ namespace MatchEngine::Core {
 
         const Value &at(const Key &key) const {
             return std::map<_Key, _Value, Compare>::at(key);
+        }
+
+        bool has(const Key &key) const {
+            return std::map<_Key, _Value, Compare>::find(key) == std::map<_Key, _Value, Compare>::end();
         }
 
         KeyValuePair find(const Key &key) const {
