@@ -61,7 +61,8 @@ int main() {
     printf("%f, %c\n", result_pair.first, result_pair.second);
 
     MatchEngine::Core::IDelegate<void, int, int, int> *delegate;
-    delegate = new MatchEngine::Core::SingleDelegate<void(int, int, int)>();
+    MatchEngine::Core::SingleDelegate<void(int, int, int), MatchEngine::Core::ThreadSafetyModeNotThreadSafeStruct> Raw {};
+    delegate = new MatchEngine::Core::SingleDelegate<void(int, int, int), MatchEngine::Core::ThreadSafetyModeThreadSafeStruct>(Raw);
     delegate->broadcast(1, 2, 3);
     delegate->bind([](int a, int b, int c) {
         printf("Delegate1: %d, %d, %d\n", a, b, c);
