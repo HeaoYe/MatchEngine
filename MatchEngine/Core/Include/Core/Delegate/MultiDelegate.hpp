@@ -45,7 +45,21 @@ namespace MatchEngine::Core {
             this->handle_allocator = Move(other.handle_allocator);
         }
 
-        DefineDefaultAssignmentOperator(TMultiDelegate)
+        TMultiDelegate &operator=(const TMultiDelegate &other) {
+            auto other_scope_lock = other.critical_section.getScopeLock();
+            auto this_scope_lock = this->critical_section.getScopeLock();
+            this->functions = Copy(other.functions);
+            this->handle_allocator = Copy(other.handle_allocator);
+            return *this;
+        }
+
+        TMultiDelegate &operator=(TMultiDelegate &&other) {
+            auto other_scope_lock = other.critical_section.getScopeLock();
+            auto this_scope_lock = this->critical_section.getScopeLock();
+            this->functions = Move(other.functions);
+            this->handle_allocator = Move(other.handle_allocator);
+            return *this;
+        }
 
         template <typename _ThreadSafetyModeStruct>
         TMultiDelegate(const TMultiDelegate<ReturnType(ArgsType...), _ThreadSafetyModeStruct> &other) : critical_section() {
