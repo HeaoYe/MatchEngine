@@ -1,4 +1,5 @@
 #include <Core/Container/Container.hpp>
+#include <Core/Delegate/Delegate.hpp>
 #include "stdio.h"
 
 int main() {
@@ -55,6 +56,18 @@ int main() {
     map2 = MatchEngine::Core::Move(map1);
     auto result_pair = map2.find(0.1f);
     printf("%f, %c\n", result_pair.first, result_pair.second);
+
+    MatchEngine::Core::IDelegate<void, int, int, int> *delegate;
+    delegate = new MatchEngine::Core::SingleDelegate<void(int, int, int)>();
+    delegate->broadcast(1, 2, 3);
+    delegate->bind([](int a, int b, int c) {
+        printf("Delegate1: %d, %d, %d\n", a, b, c);
+    });
+    delegate->broadcast(1, 2, 2);
+    delegate->bind([](int a, int b, int c) {
+        printf("Delegate2: %d, %d, %d\n", a, b, c);
+    });
+    delegate->broadcast(1, 4, 2);
 
     return 0;
 }
