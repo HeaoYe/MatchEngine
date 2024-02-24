@@ -13,7 +13,7 @@ namespace MatchEngine::Core {
      * @tparam ThreadSafetyMode 线程安全模式
      */
     template <typename HandleType, ThreadSafetyMode>
-    class HandleAllocator;
+    class THandleAllocator;
 
     /**
      * @brief 线程安全的句柄分配器
@@ -21,16 +21,32 @@ namespace MatchEngine::Core {
      * @tparam HandleType 句柄类型
      */
     template <typename HandleType>
-    class HandleAllocator<HandleType, ThreadSafetyMode::eThreadSafe> {
+    class THandleAllocator<HandleType, ThreadSafetyMode::eThreadSafe> {
+        template <typename _HandleType, ThreadSafetyMode _mode>
+        friend class THandleAllocator;
     public:
         inline static const HandleType InvalidHandle = HandleType(0);
     public:
-        HandleAllocator() : current_handle(InvalidHandle) {}
-        HandleAllocator(const HandleAllocator &other) : current_handle(other.current_handle.load()) {}
-        HandleAllocator(HandleAllocator &&other) : current_handle(other.current_handle.load()) {
+        THandleAllocator() : current_handle(InvalidHandle) {}
+        THandleAllocator(const THandleAllocator &other) : current_handle(other.current_handle.load()) {}
+        THandleAllocator(THandleAllocator &&other) : current_handle(other.current_handle.load()) {
             other.current_handle.exchange(InvalidHandle);
         }
-        DefineDefaultAssignmentOperator(HandleAllocator)
+        DefineDefaultAssignmentOperator(THandleAllocator)
+
+        THandleAllocator(const THandleAllocator<HandleType, ThreadSafetyMode::eNotThreadSafe> &other) : current_handle(other.current_handle) {}
+        THandleAllocator(THandleAllocator<HandleType, ThreadSafetyMode::eNotThreadSafe> &&other) : current_handle(other.current_handle) {
+            other.current_handle = THandleAllocator<HandleType, ThreadSafetyMode::eNotThreadSafe>::InvalidHandle;
+        }
+        THandleAllocator &operator=(const THandleAllocator<HandleType, ThreadSafetyMode::eNotThreadSafe> &other) {
+            this->current_handle.exchange(other.current_handle);
+            return *this;
+        }
+        THandleAllocator &operator=(THandleAllocator<HandleType, ThreadSafetyMode::eNotThreadSafe> &&other) {
+            this->current_handle.exchange(other.current_handle);
+            other.current_handle = THandleAllocator<HandleType, ThreadSafetyMode::eNotThreadSafe>::InvalidHandle;
+            return *this;
+        }
     public:
         HandleType allocate() {
             HandleType result = ++current_handle;
@@ -49,16 +65,32 @@ namespace MatchEngine::Core {
      * @tparam HandleType 句柄类型
      */
     template <typename HandleType>
-    class HandleAllocator<HandleType, ThreadSafetyMode::eNotThreadSafe> {
+    class THandleAllocator<HandleType, ThreadSafetyMode::eNotThreadSafe> {
+        template <typename _HandleType, ThreadSafetyMode _mode>
+        friend class THandleAllocator;
     public:
         inline static const HandleType InvalidHandle = HandleType(0);
     public:
-        HandleAllocator() : current_handle(InvalidHandle) {}
-        HandleAllocator(const HandleAllocator &other) : current_handle(other.current_handle) {}
-        HandleAllocator(HandleAllocator &&other) : current_handle(other.current_handle) {
+        THandleAllocator() : current_handle(InvalidHandle) {}
+        THandleAllocator(const THandleAllocator &other) : current_handle(other.current_handle) {}
+        THandleAllocator(THandleAllocator &&other) : current_handle(other.current_handle) {
             other.current_handle = InvalidHandle;
         }
-        DefineDefaultAssignmentOperator(HandleAllocator)
+        DefineDefaultAssignmentOperator(THandleAllocator)
+
+        THandleAllocator(const THandleAllocator<HandleType, ThreadSafetyMode::eThreadSafe> &other) : current_handle(other.current_handle.load()) {}
+        THandleAllocator(THandleAllocator<HandleType, ThreadSafetyMode::eThreadSafe> &&other) : current_handle(other.current_handle.load()) {
+            other.current_handle.exchange(InvalidHandle);
+        }
+        THandleAllocator &operator=(const THandleAllocator<HandleType, ThreadSafetyMode::eThreadSafe> &other) {
+            this->current_handle = other.current_handle.load();
+            return *this;
+        }
+        THandleAllocator &operator=(THandleAllocator<HandleType, ThreadSafetyMode::eThreadSafe> &&other) {
+            this->current_handle = other.current_handle.load();
+            other.current_handle.exchange(THandleAllocator<HandleType, ThreadSafetyMode::eThreadSafe>::InvalidHandle);
+            return *this;
+        }
     public:
         HandleType allocate() {
             HandleType result = ++current_handle;
