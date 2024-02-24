@@ -82,5 +82,22 @@ int main() {
     }
     printf("\n");
 
+    MatchEngine::Core::IDelegate<void, int> *delegate2;
+    delegate2 = new MatchEngine::Core::TMultiDelegate<void(int), MatchEngine::Core::ThreadSafetyModeNotThreadSafeStruct>();
+    delegate2->bind([](int a) {
+        printf("MDelegate1: %d\n", a);
+    });
+    f = delegate2->bind([](int a) {
+        printf("MDelegate2: %d\n", a);
+    });
+    delegate2->bind([](int a) {
+        printf("MDelegate3: %d\n", a);
+    });
+    delegate2->broadcast(1);
+    printf("%d\n", delegate2->hasDelegateFunction(f));
+    delegate2->removeDelegateFunction(f);
+    printf("%d\n", delegate2->hasDelegateFunction(f));
+    delegate2->broadcast(3);
+
     return 0;
 }

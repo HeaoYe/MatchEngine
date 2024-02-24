@@ -5,126 +5,122 @@
 #include "Core/Misc/Move.hpp"
 #include "Core/Misc/Forward.hpp"
 #include "Core/Misc/HandleAllocator.hpp"
-#include "Core/Container/Pair.hpp"
+#include "Core/Container/Map.hpp"
 #include "Core/Thread/ThreadSafetyMode.hpp"
 #include "Core/Thread/CriticalSection.hpp"
 
 namespace MatchEngine::Core {
     template <typename FunctionType, typename ThreadSafetyModeStruct = ThreadSafetyModeThreadSafeStruct>
-    class TSingleDelegate {};
+    class TMultiDelegate {};
 
     /**
-     * @brief 单播委托
+     * @brief 多播委托
      *
      * @tparam ReturnType 委托函数的返回值类型
      * @tparam ArgsType 委托函数的参数类型
      * @tparam ThreadSafetyModeStruct 委托的线程安全模式
      */
     template <typename ReturnType, typename ...ArgsType, typename ThreadSafetyModeStruct>
-    class TSingleDelegate<ReturnType(ArgsType...), ThreadSafetyModeStruct> : public IDelegate<ReturnType, ArgsType...> {
+    class TMultiDelegate<ReturnType(ArgsType...), ThreadSafetyModeStruct> : public IDelegate<ReturnType, ArgsType...> {
         template <typename, typename>
         friend class TSingleDelegate;
 
         using BaseClass = IDelegate<ReturnType, ArgsType...>;
         using FunctionType = typename BaseClass::FunctionType;
         using DelegateHandleType = typename BaseClass::DelegateHandleType;
-        inline static const FunctionType EmptyDelegateFunction = [](ArgsType &&...args) { if constexpr (!std::is_void_v<ReturnType>) { return ReturnType {}; } };
     public:
-        TSingleDelegate() : handle_allocator(), critical_section() {
-            this->function = { InvalidHandleTrait<DelegateHandleType>::value, Copy(EmptyDelegateFunction) };
-        }
+        TMultiDelegate() : functions(), handle_allocator(), critical_section() {}
 
-        TSingleDelegate(const TSingleDelegate &other) : critical_section() {
+        TMultiDelegate(const TMultiDelegate &other) : critical_section() {
             auto other_scope_lock = other.critical_section.getScopeLock();
             auto this_scope_lock = this->critical_section.getScopeLock();
-            this->function = Copy(other.function);
+            this->functions = Copy(other.functions);
             this->handle_allocator = Copy(other.handle_allocator);
         }
 
-        TSingleDelegate(TSingleDelegate &&other) : critical_section() {
+        TMultiDelegate(TMultiDelegate &&other) : critical_section() {
             auto other_scope_lock = other.critical_section.getScopeLock();
             auto this_scope_lock = this->critical_section.getScopeLock();
-            this->function = Move(other.function);
-            other.function = { InvalidHandleTrait<DelegateHandleType>::value, Copy(EmptyDelegateFunction) };
+            this->functions = Move(other.functions);
             this->handle_allocator = Move(other.handle_allocator);
         }
 
-        DefineDefaultAssignmentOperator(TSingleDelegate)
+        DefineDefaultAssignmentOperator(TMultiDelegate)
 
         template <typename _ThreadSafetyModeStruct>
-        TSingleDelegate(const TSingleDelegate<ReturnType(ArgsType...), _ThreadSafetyModeStruct> &other) : critical_section() {
+        TMultiDelegate(const TMultiDelegate<ReturnType(ArgsType...), _ThreadSafetyModeStruct> &other) : critical_section() {
             auto other_scope_lock = other.critical_section.getScopeLock();
             auto this_scope_lock = this->critical_section.getScopeLock();
-            this->function = Copy(other.function);
+            this->functions = Copy(other.functions);
             this->handle_allocator = Copy(other.handle_allocator);
         }
 
         template <typename _ThreadSafetyModeStruct>
-        TSingleDelegate(TSingleDelegate<ReturnType(ArgsType...), _ThreadSafetyModeStruct> &&other) : critical_section() {
+        TMultiDelegate(TMultiDelegate<ReturnType(ArgsType...), _ThreadSafetyModeStruct> &&other) : critical_section() {
             auto other_scope_lock = other.critical_section.getScopeLock();
             auto this_scope_lock = this->critical_section.getScopeLock();
-            this->function = Move(other.function);
-            other.function = { InvalidHandleTrait<DelegateHandleType>::value, Copy(EmptyDelegateFunction) };
+            this->functions = Move(other.functions);
             this->handle_allocator = Move(other.handle_allocator);
         }
 
         template <typename _ThreadSafetyModeStruct>
-        TSingleDelegate &operator=(const TSingleDelegate<ReturnType(ArgsType...), _ThreadSafetyModeStruct> &other) {
+        TMultiDelegate &operator=(const TMultiDelegate<ReturnType(ArgsType...), _ThreadSafetyModeStruct> &other) {
             auto other_scope_lock = other.critical_section.getScopeLock();
             auto this_scope_lock = this->critical_section.getScopeLock();
-            this->function = Copy(other.function);
+            this->functions = Copy(other.functions);
             this->handle_allocator = Copy(other.handle_allocator);
             return *this;
         }
 
         template <typename _ThreadSafetyModeStruct>
-        TSingleDelegate &operator=(TSingleDelegate<ReturnType(ArgsType...), _ThreadSafetyModeStruct> &&other) {
+        TMultiDelegate &operator=(TMultiDelegate<ReturnType(ArgsType...), _ThreadSafetyModeStruct> &&other) {
             auto other_scope_lock = other.critical_section.getScopeLock();
             auto this_scope_lock = this->critical_section.getScopeLock();
-            this->function = Move(other.function);
-            other.function = { InvalidHandleTrait<DelegateHandleType>::value, Copy(EmptyDelegateFunction) };
+            this->functions = Move(other.functions);
             this->handle_allocator = Move(other.handle_allocator);
             return *this;
         }
-
-        TSingleDelegate(const FunctionType &function) : function(Copy(function)), critical_section() {}
-
-        TSingleDelegate(FunctionType &&function) : function(Move(function)), critical_section() {}
     public:
         DelegateHandleType bind(const FunctionType &function) override {
             auto scope_lock = this->critical_section.getScopeLock();
-            this->function = { handle_allocator.allocate(), Copy(function) };
-            return this->function.first;
+            auto handle = handle_allocator.allocate();
+            this->functions.add(handle, Copy(function));
+            return handle;
         }
 
         DelegateHandleType bind(FunctionType &&function) override {
             auto scope_lock = this->critical_section.getScopeLock();
-            this->function = { handle_allocator.allocate(), Move(function) };
-            return this->function.first;
+            auto handle = handle_allocator.allocate();
+            this->functions.add(handle, Move(function));
+            return handle;
         }
 
         void removeDelegateFunction(DelegateHandleType handle) override {
             auto scope_lock = this->critical_section.getScopeLock();
-            if (this->function.first == handle) {
-                this->function = { InvalidHandleTrait<DelegateHandleType>::value, Copy(EmptyDelegateFunction) };
-            }
+            this->functions.remove(handle);
         }
 
         ReturnType broadcast(ArgsType &&...args) override {
             auto scope_lock = this->critical_section.getScopeLock();
             if constexpr (std::is_void_v<ReturnType>) {
-                this->function.second(Forward<ArgsType>(args)...);
+                for (auto &[handle, function] : this->functions) {
+                    function(Forward<ArgsType>(args)...);
+                }
             } else {
-                return this->function.second(Forward<ArgsType>(args)...);
+                ReturnType result;
+                for (auto &[handle, function] : this->functions) {
+                    result = function(Forward<ArgsType>(args)...);
+                }
+                return result;
             }
         }
 
         bool hasDelegateFunction(DelegateHandleType handle) override {
             auto scope_lock = this->critical_section.getScopeLock();
-            return this->function.first == handle;
+            return this->functions.has(handle);
         }
     private:
-        TPair<DelegateHandleType, FunctionType> function;
+        TMap<DelegateHandleType, FunctionType> functions;
         THandleAllocator<DelegateHandleType, ThreadSafetyModeThreadSafeStruct::SafetyMode> handle_allocator;
         CriticalSection<ThreadSafetyModeThreadSafeStruct::SafetyMode> critical_section;
     };
