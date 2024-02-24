@@ -22,7 +22,7 @@ namespace MatchEngine::Core {
      */
     template <typename HandleType>
     class THandleAllocator<HandleType, ThreadSafetyMode::eThreadSafe> {
-        template <typename _HandleType, ThreadSafetyMode _mode>
+        template <typename, ThreadSafetyMode>
         friend class THandleAllocator;
     public:
         inline static const HandleType InvalidHandle = HandleType(0);
@@ -66,7 +66,7 @@ namespace MatchEngine::Core {
      */
     template <typename HandleType>
     class THandleAllocator<HandleType, ThreadSafetyMode::eNotThreadSafe> {
-        template <typename _HandleType, ThreadSafetyMode _mode>
+        template <typename, ThreadSafetyMode>
         friend class THandleAllocator;
     public:
         inline static const HandleType InvalidHandle = HandleType(0);

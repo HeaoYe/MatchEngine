@@ -23,11 +23,11 @@ namespace MatchEngine::Core {
     public:
         CriticalSection() : mutex() {}
 
-        ScopeLock<std::mutex> getScopeLock() {
+        ScopeLock<std::mutex> getScopeLock() const {
             return { &mutex };
         }
     private:
-        std::mutex mutex;
+        mutable std::mutex mutex;
     };
 
     /**
