@@ -1,7 +1,6 @@
 #pragma once
 
 #include "IDelegate.hpp"
-#include "Core/Defines.hpp"
 #include "Core/Misc/Copy.hpp"
 #include "Core/Misc/Move.hpp"
 #include "Core/Misc/Forward.hpp"
@@ -21,38 +20,63 @@ namespace MatchEngine::Core {
      */
     template <typename ReturnType, typename ...ArgsType, typename ThreadSafetyModeStruct>
     class SingleDelegate<ReturnType(ArgsType...), ThreadSafetyModeStruct> : public IDelegate<ReturnType, ArgsType...> {
-    public:
+        template <typename, typename>
+        friend class SingleDelegate;
+
         using BaseClass = IDelegate<ReturnType, ArgsType...>;
         using FunctionType = typename BaseClass::FunctionType;
         inline static const FunctionType EmptyDelegateFunction = [](ArgsType &&...args) { if constexpr (!std::is_void_v<ReturnType>) { return ReturnType {}; } };
     public:
         SingleDelegate() : function(Copy(EmptyDelegateFunction)), critical_section() {}
-        SingleDelegate(const SingleDelegate &other) : critical_section() {
-            auto scope_lock = other.critical_section.getScopeLock();
+
+        template <typename _ThreadSafetyModeStruct>
+        SingleDelegate(const SingleDelegate<ReturnType(ArgsType...), _ThreadSafetyModeStruct> &other) : critical_section() {
+            auto other_scope_lock = other.critical_section.getScopeLock();
+            auto this_scope_lock = this->critical_section.getScopeLock();
             this->function = Copy(other.function);
         }
-        SingleDelegate(SingleDelegate &&other) : critical_section() {
-            auto scope_lock = other.critical_section.getScopeLock();
+
+        template <typename _ThreadSafetyModeStruct>
+        SingleDelegate(SingleDelegate<ReturnType(ArgsType...), _ThreadSafetyModeStruct> &&other) : critical_section() {
+            auto other_scope_lock = other.critical_section.getScopeLock();
+            auto this_scope_lock = this->critical_section.getScopeLock();
             this->function = Move(other.function);
             other.function = Copy(EmptyDelegateFunction);
         }
-        DefineDefaultAssignmentOperator(SingleDelegate)
+
+        template <typename _ThreadSafetyModeStruct>
+        SingleDelegate &operator=(const SingleDelegate<ReturnType(ArgsType...), _ThreadSafetyModeStruct> &other) {
+            auto other_scope_lock = other.critical_section.getScopeLock();
+            auto this_scope_lock = this->critical_section.getScopeLock();
+            this->function = Copy(other.function);
+            return *this;
+        }
+
+        template <typename _ThreadSafetyModeStruct>
+        SingleDelegate &operator=(SingleDelegate<ReturnType(ArgsType...), _ThreadSafetyModeStruct> &&other) {
+            auto other_scope_lock = other.critical_section.getScopeLock();
+            auto this_scope_lock = this->critical_section.getScopeLock();
+            this->function = Move(other.function);
+            other.function = Copy(EmptyDelegateFunction);
+            return *this;
+        }
 
         SingleDelegate(const FunctionType &function) : function(Copy(function)), critical_section() {}
+
         SingleDelegate(FunctionType &&function) : function(Move(function)), critical_section() {}
     public:
         void bind(const FunctionType &function) override {
-            auto scope_lock = critical_section.getScopeLock();
+            auto scope_lock = this->critical_section.getScopeLock();
             this->function = Copy(function);
         }
 
         void bind(FunctionType &&function) override {
-            auto scope_lock = critical_section.getScopeLock();
+            auto scope_lock = this->critical_section.getScopeLock();
             this->function = Move(function);
         }
 
         ReturnType broadcast(ArgsType &&...args) override {
-            auto scope_lock = critical_section.getScopeLock();
+            auto scope_lock = this->critical_section.getScopeLock();
             if constexpr (std::is_void_v<ReturnType>) {
                 this->function(Forward<ArgsType>(args)...);
             } else {
