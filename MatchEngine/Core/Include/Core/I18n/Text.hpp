@@ -1,6 +1,6 @@
 #pragma once
 
-#include <string>
+#include "Core/String/StringImpl.hpp"
 
 namespace MatchEngine::Core {
     /**
@@ -8,5 +8,5 @@ namespace MatchEngine::Core {
      *
      * TODO: 实现I18n
      */
-    using Text = std::string;
+    using Text = String;
 }
