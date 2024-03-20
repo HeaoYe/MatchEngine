@@ -50,6 +50,10 @@ namespace MatchEngine::Core {
             std::vector<_T>::resize(size);
         }
 
+        void reserve(size_type size) {
+            std::vector<_T>::reserve(size);
+        }
+
         void clear() {
             std::vector<_T>::clear();
         }
