@@ -46,6 +46,10 @@ namespace MatchEngine::Core {
             return std::vector<_T>::size();
         }
 
+        void resize(size_type size) {
+            std::vector<_T>::resize(size);
+        }
+
         void clear() {
             std::vector<_T>::clear();
         }
