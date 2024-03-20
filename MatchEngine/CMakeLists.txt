@@ -17,7 +17,16 @@ function(MatchEngine_CreateSubProject SubProjectName)
     set_property(GLOBAL APPEND PROPERTY MatchEngineLibraries MatchEngine-${SubProjectName})
 endfunction()
 
-function(MatchEngine_LinkLibraries TargetName)
+function(MatchEngine_AddDependency SubProjectName DependencyName)
+    target_link_libraries(MatchEngine-${SubProjectName} PRIVATE MatchEngine-${DependencyName})
+    add_dependencies(MatchEngine-${SubProjectName} MatchEngine-${DependencyName})
+endfunction()
+
+function(MatchEngine_LinkThirdparty SubProjectName LibraryName)
+    target_link_libraries(MatchEngine-${SubProjectName} PRIVATE ${LibraryName})
+endfunction()
+
+function(MatchEngine_Link TargetName)
     get_property(Property_MatchEngineLibraries GLOBAL PROPERTY MatchEngineLibraries)
     target_link_libraries(${TargetName} PRIVATE ${Property_MatchEngineLibraries})
 endfunction()
