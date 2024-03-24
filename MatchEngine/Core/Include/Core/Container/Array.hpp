@@ -31,11 +31,11 @@ namespace MatchEngine::Core {
         constexpr TArray(std::initializer_list<T> initializer_list) : std::vector<T>(initializer_list) {}
     public:
         void add(const T &element) {
-            std::vector<_T>::push_back(element);
+            std::vector<_T>::push_back(Copy(element));
         }
 
         void add(T &&element) {
-            std::vector<_T>::push_back(element);
+            std::vector<_T>::push_back(Move(element));
         }
 
         void remove(size_type index) {

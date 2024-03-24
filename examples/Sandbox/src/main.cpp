@@ -1,6 +1,4 @@
-#include <Core/Container/Container.hpp>
-#include <Core/Delegate/Delegate.hpp>
-#include <Core/Misc/Misc.hpp>
+#include <Core/Core.hpp>
 
 #include <ranges>
 #include <cstdio>
