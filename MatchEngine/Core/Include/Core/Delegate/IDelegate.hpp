@@ -4,12 +4,15 @@
 #include <cstdint>
 
 namespace MatchEngine::Core {
+    template <typename FunctionType>
+    class IDelegate;
+
     /**
      * @brief 委托接口
      *
      */
     template <typename ReturnType, typename ...ArgsType>
-    class IDelegate {
+    class IDelegate<ReturnType(ArgsType...)> {
     public:
         using FunctionType = std::function<ReturnType(ArgsType ...)>;
         using DelegateHandleType = uint64_t;

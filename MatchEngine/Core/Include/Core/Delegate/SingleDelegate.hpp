@@ -11,7 +11,7 @@
 
 namespace MatchEngine::Core {
     template <typename FunctionType, typename ThreadSafetyModeStruct = ThreadSafetyModeThreadSafeStruct>
-    class TSingleDelegate {};
+    class TSingleDelegate;
 
     /**
      * @brief 单播委托
@@ -21,13 +21,13 @@ namespace MatchEngine::Core {
      * @tparam ThreadSafetyModeStruct 委托的线程安全模式
      */
     template <typename ReturnType, typename ...ArgsType, typename ThreadSafetyModeStruct>
-    class TSingleDelegate<ReturnType(ArgsType...), ThreadSafetyModeStruct> : public IDelegate<ReturnType, ArgsType...> {
+    class TSingleDelegate<ReturnType(ArgsType...), ThreadSafetyModeStruct> : public IDelegate<ReturnType(ArgsType...)> {
         template <typename, typename>
         friend class TSingleDelegate;
 
-        using BaseClass = IDelegate<ReturnType, ArgsType...>;
-        using FunctionType = typename BaseClass::FunctionType;
-        using DelegateHandleType = typename BaseClass::DelegateHandleType;
+        using Super = IDelegate<ReturnType(ArgsType...)>;
+        using FunctionType = typename Super::FunctionType;
+        using DelegateHandleType = typename Super::DelegateHandleType;
         inline static const FunctionType EmptyDelegateFunction = [](ArgsType &&...args) { if constexpr (!std::is_void_v<ReturnType>) { return ReturnType {}; } };
     public:
         TSingleDelegate() : handle_allocator(), critical_section() {

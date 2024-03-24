@@ -60,7 +60,7 @@ int main() {
     auto result_pair = map2.find(0.1f);
     printf("%f, %c\n", result_pair.first, result_pair.second);
 
-    MatchEngine::Core::IDelegate<void, int, int, int> *delegate;
+    MatchEngine::Core::IDelegate<void(int, int, int)> *delegate;
     MatchEngine::Core::TSingleDelegate<void(int, int, int), MatchEngine::Core::ThreadSafetyModeNotThreadSafeStruct> Raw {};
     delegate = new MatchEngine::Core::TSingleDelegate<void(int, int, int), MatchEngine::Core::ThreadSafetyModeNotThreadSafeStruct>(MatchEngine::Core::Move(Raw));
     delegate->broadcast(1, 2, 3);
@@ -82,7 +82,7 @@ int main() {
     }
     printf("\n");
 
-    MatchEngine::Core::IDelegate<void, int> *delegate2;
+    MatchEngine::Core::IDelegate<void(int)> *delegate2;
     delegate2 = new MatchEngine::Core::TMultiDelegate<void(int), MatchEngine::Core::ThreadSafetyModeNotThreadSafeStruct>();
     delegate2->bind([](int a) {
         printf("MDelegate1: %d\n", a);
