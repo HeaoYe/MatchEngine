@@ -16,53 +16,64 @@ namespace MatchEngine::Core {
      * TODO: 不依赖std::shared_ptr实现
      */
     template <typename T, ThreadSafetyMode mode>
-    class SharedPtr {
+    class TSharedPtr {
+        template <typename, ThreadSafetyMode>
+        friend class TSharedPtr;
+
+        template <typename, ThreadSafetyMode>
+        friend class TSharedFromThis;
+    private:
+        TSharedPtr(T *object, TCounter<size_t, mode> *reference_count) : object(object), reference_count(reference_count) {
+            increaseRef();
+        }
     public:
-        SharedPtr(T *data) : data(data), reference_count(new Counter<size_t, mode>(0)) {
+        TSharedPtr(T *object) : object(object), reference_count(new TCounter<size_t, mode>(0)) {
             increaseRef();
         }
 
-        ~SharedPtr() {
+        ~TSharedPtr() {
             if (reference_count != nullptr) {
                 decreaseRef();
             }
         }
 
         template <ThreadSafetyMode OtherMode>
-        SharedPtr(const SharedPtr<T, OtherMode> &other) : data(other.data), reference_count(other.reference_count) {
+        TSharedPtr(const TSharedPtr<T, OtherMode> &other) : object(other.object), reference_count(other.reference_count) {
             increaseRef();
         }
 
         template <ThreadSafetyMode OtherMode>
-        SharedPtr &operator=(const SharedPtr<T, OtherMode> &other) {
-            data = other.data;
+        TSharedPtr &operator=(const TSharedPtr<T, OtherMode> &other) {
+            object = other.object;
             reference_count = other.reference_count;
             increaseRef();
+            return *this;
         }
 
         template <ThreadSafetyMode OtherMode>
-        SharedPtr(SharedPtr<T, OtherMode> &&other) : data(other.data), reference_count(other.reference_count) {
-            other.data = 0;
+        TSharedPtr(TSharedPtr<T, OtherMode> &&other) : object(other.object), reference_count(other.reference_count) {
+            other.object = 0;
             other.reference_count = nullptr;
         }
 
         template <ThreadSafetyMode OtherMode>
-        SharedPtr &operator=(SharedPtr<T, OtherMode> &&other) {
-            data = other.data;
+        TSharedPtr &operator=(TSharedPtr<T, OtherMode> &&other) {
+            object = other.object;
             reference_count = other.reference_count;
-            other.data = 0;
+            other.object = 0;
             other.reference_count = nullptr;
+            return *this;
         }
 
         void reset() {
             decreaseRef();
-            data = nullptr;
+            object = nullptr;
             reference_count = nullptr;
         }
 
-        T *operator->() { return data; }
+        T *operator->() { return object; }
 
-        const T *operator->() const { return data; }
+        const T *operator->() const { return object; }
     private:
         void increaseRef() {
             reference_count->increase();
@@ -70,22 +81,22 @@ namespace MatchEngine::Core {
 
         void decreaseRef() {
             if (reference_count->decrease() == 1) {
-                delete data;
-                data = nullptr;
+                delete object;
+                object = nullptr;
             }
         }
     private:
-        T *data;
-        Counter<size_t, mode> *reference_count;
+        T *object;
+        TCounter<size_t, mode> *reference_count;
     };
 
     template <typename T, ThreadSafetyMode mode = ThreadSafetyMode::eThreadSafe>
-    SharedPtr<T, mode> MakeSharedPtr(T *ptr) {
-        return SharedPtr<T, mode>(ptr);
+    TSharedPtr<T, mode> MakeSharedPtr(T *ptr) {
+        return TSharedPtr<T, mode>(ptr);
     }
 
     template <typename T, typename ...Args, ThreadSafetyMode mode = ThreadSafetyMode::eThreadSafe>
-    SharedPtr<T, mode> MakeSharedPtr(Args &&...args) {
+    TSharedPtr<T, mode> MakeSharedPtr(Args &&...args) {
         return MakeSharedPtr(new T(Forward<Args>(args)...));
     }
 }
