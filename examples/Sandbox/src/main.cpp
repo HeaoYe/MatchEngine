@@ -97,5 +97,13 @@ int main() {
     printf("%d\n", delegate2->hasDelegateFunction(f));
     delegate2->broadcast(3);
 
+    auto shared_array = MatchEngine::Core::MakeSharedPtr<MatchEngine::Core::TArray<int>>();
+    shared_array->add(1);
+    shared_array->remove(0);
+    shared_array->resize(100);
+    auto shared2 = MatchEngine::Core::Move(shared_array);
+    shared2->add(1);
+    shared2.reset();
+
     return 0;
 }
