@@ -6,7 +6,7 @@
 
 namespace MatchEngine::Core {
     template <typename T, ThreadSafetyMode>
-    class Counter;
+    class TCounter;
 
     /**
      * @brief 线程安全计数器
@@ -14,19 +14,21 @@ namespace MatchEngine::Core {
      * @tparam T
      */
     template <typename T>
-    class Counter<T, ThreadSafetyMode::eThreadSafe> {
+    class TCounter<T, ThreadSafetyMode::eThreadSafe> {
+        template <typename, ThreadSafetyMode>
+        friend class TCounter;
     public:
-        Counter() = default;
-        Counter(T count) { this->count.store(count); }
-        Counter(const Counter &other) { count.store(other.count.load()); }
-        Counter& operator=(const Counter &other) { count.store(other.count.load()); }
-        Counter(Counter &&other) { count.store(other.count.load()); other.reset(); }
-        Counter& operator=(Counter &&other) { count.store(other.count.load()); other.reset(); }
+        TCounter() = default;
+        TCounter(T count) { this->count.store(count); }
+        TCounter(const TCounter &other) { count.store(other.count.load()); }
+        TCounter& operator=(const TCounter &other) { count.store(other.count.load()); return *this; }
+        TCounter(TCounter &&other) { count.store(other.count.load()); other.reset(); }
+        TCounter& operator=(TCounter &&other) { count.store(other.count.load()); other.reset(); return *this; }
 
-        Counter(const Counter<T, ThreadSafetyMode::eNotThreadSafe> &other) { count.store(other.count); }
-        Counter& operator=(const Counter<T, ThreadSafetyMode::eNotThreadSafe> &other) { count.store(other.count); }
-        Counter(Counter<T, ThreadSafetyMode::eNotThreadSafe> &&other) { count.store(other.count); other.reset(); }
-        Counter& operator=(Counter<T, ThreadSafetyMode::eNotThreadSafe> &&other) { count.store(other.count); other.reset(); }
+        TCounter(const TCounter<T, ThreadSafetyMode::eNotThreadSafe> &other) { count.store(other.count); }
+        TCounter& operator=(const TCounter<T, ThreadSafetyMode::eNotThreadSafe> &other) { count.store(other.count); return *this; }
+        TCounter(TCounter<T, ThreadSafetyMode::eNotThreadSafe> &&other) { count.store(other.count); other.reset(); }
+        TCounter& operator=(TCounter<T, ThreadSafetyMode::eNotThreadSafe> &&other) { count.store(other.count); other.reset(); return *this; }
 
         /**
          * @brief 自增
@@ -85,18 +87,21 @@ namespace MatchEngine::Core {
      * @tparam T
      */
     template <typename T>
-    class Counter<T, ThreadSafetyMode::eNotThreadSafe> {
-        Counter() = default;
-        Counter(T count) : count(count) {}
-        Counter(const Counter &other) : count(other.count) {}
-        Counter& operator=(const Counter &other) { count = other.count; }
-        Counter(Counter &&other) : count(other.count) { other.reset(); }
-        Counter& operator=(Counter &&other) { count = other.count; other.reset(); }
+    class TCounter<T, ThreadSafetyMode::eNotThreadSafe> {
+        template <typename, ThreadSafetyMode>
+        friend class TCounter;
+    public:
+        TCounter() = default;
+        TCounter(T count) : count(count) {}
+        TCounter(const TCounter &other) : count(other.count) {}
+        TCounter& operator=(const TCounter &other) { count = other.count; return *this; }
+        TCounter(TCounter &&other) : count(other.count) { other.reset(); }
+        TCounter& operator=(TCounter &&other) { count = other.count; other.reset(); return *this; }
 
-        Counter(const Counter<T, ThreadSafetyMode::eThreadSafe> &other) : count(other.count.load()) {}
-        Counter& operator=(const Counter<T, ThreadSafetyMode::eThreadSafe> &other) { count = other.count.load(); }
-        Counter(Counter<T, ThreadSafetyMode::eThreadSafe> &&other) : count(other.count.load()) { other.reset(); }
-        Counter& operator=(Counter<T, ThreadSafetyMode::eThreadSafe> &&other) { count = other.count.load(); other.reset(); }
+        TCounter(const TCounter<T, ThreadSafetyMode::eThreadSafe> &other) : count(other.count.load()) {}
+        TCounter& operator=(const TCounter<T, ThreadSafetyMode::eThreadSafe> &other) { count = other.count.load(); return *this; }
+        TCounter(TCounter<T, ThreadSafetyMode::eThreadSafe> &&other) : count(other.count.load()) { other.reset(); }
+        TCounter& operator=(TCounter<T, ThreadSafetyMode::eThreadSafe> &&other) { count = other.count.load(); other.reset(); return *this; }
 
         /**
          * @brief 自增
