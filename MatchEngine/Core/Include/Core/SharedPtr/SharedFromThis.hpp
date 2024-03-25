@@ -11,7 +11,7 @@ namespace MatchEngine::Core {
      * @tparam T "自己"的类型
      * @tparam mode 线程安全模式
      */
-    template <typename T, ThreadSafetyMode mode = ThreadSafetyMode::eThreadSafe>
+    template <typename T, EThreadSafetyMode mode = EThreadSafetyMode::eThreadSafe>
     class TSharedFromThis {
     public:
         TSharedFromThis() : reference_count(new TCounter<size_t, mode>(1)) {}

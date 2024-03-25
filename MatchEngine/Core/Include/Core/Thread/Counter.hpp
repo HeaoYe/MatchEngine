@@ -5,17 +5,17 @@
 #include "Sleep.hpp"
 
 namespace MatchEngine::Core {
-    template <typename T, ThreadSafetyMode>
+    template <typename T, EThreadSafetyMode>
     class TCounter;
 
     /**
      * @brief 线程安全计数器
      *
-     * @tparam T
+     * @tparam T 计数类型
      */
     template <typename T>
-    class TCounter<T, ThreadSafetyMode::eThreadSafe> {
-        template <typename, ThreadSafetyMode>
+    class TCounter<T, EThreadSafetyMode::eThreadSafe> {
+        template <typename, EThreadSafetyMode>
         friend class TCounter;
     public:
         TCounter() = default;
@@ -25,10 +25,10 @@ namespace MatchEngine::Core {
         TCounter(TCounter &&other) { count.store(other.count.load()); other.reset(); }
         TCounter& operator=(TCounter &&other) { count.store(other.count.load()); other.reset(); return *this; }
 
-        TCounter(const TCounter<T, ThreadSafetyMode::eNotThreadSafe> &other) { count.store(other.count); }
-        TCounter& operator=(const TCounter<T, ThreadSafetyMode::eNotThreadSafe> &other) { count.store(other.count); return *this; }
-        TCounter(TCounter<T, ThreadSafetyMode::eNotThreadSafe> &&other) { count.store(other.count); other.reset(); }
-        TCounter& operator=(TCounter<T, ThreadSafetyMode::eNotThreadSafe> &&other) { count.store(other.count); other.reset(); return *this; }
+        TCounter(const TCounter<T, EThreadSafetyMode::eNotThreadSafe> &other) { count.store(other.count); }
+        TCounter& operator=(const TCounter<T, EThreadSafetyMode::eNotThreadSafe> &other) { count.store(other.count); return *this; }
+        TCounter(TCounter<T, EThreadSafetyMode::eNotThreadSafe> &&other) { count.store(other.count); other.reset(); }
+        TCounter& operator=(TCounter<T, EThreadSafetyMode::eNotThreadSafe> &&other) { count.store(other.count); other.reset(); return *this; }
 
         /**
          * @brief 自增
@@ -84,11 +84,11 @@ namespace MatchEngine::Core {
     /**
      * @brief 非线程安全计数器
      *
-     * @tparam T
+     * @tparam T 计数类型
      */
     template <typename T>
-    class TCounter<T, ThreadSafetyMode::eNotThreadSafe> {
-        template <typename, ThreadSafetyMode>
+    class TCounter<T, EThreadSafetyMode::eNotThreadSafe> {
+        template <typename, EThreadSafetyMode>
         friend class TCounter;
     public:
         TCounter() = default;
@@ -98,10 +98,10 @@ namespace MatchEngine::Core {
         TCounter(TCounter &&other) : count(other.count) { other.reset(); }
         TCounter& operator=(TCounter &&other) { count = other.count; other.reset(); return *this; }
 
-        TCounter(const TCounter<T, ThreadSafetyMode::eThreadSafe> &other) : count(other.count.load()) {}
-        TCounter& operator=(const TCounter<T, ThreadSafetyMode::eThreadSafe> &other) { count = other.count.load(); return *this; }
-        TCounter(TCounter<T, ThreadSafetyMode::eThreadSafe> &&other) : count(other.count.load()) { other.reset(); }
-        TCounter& operator=(TCounter<T, ThreadSafetyMode::eThreadSafe> &&other) { count = other.count.load(); other.reset(); return *this; }
+        TCounter(const TCounter<T, EThreadSafetyMode::eThreadSafe> &other) : count(other.count.load()) {}
+        TCounter& operator=(const TCounter<T, EThreadSafetyMode::eThreadSafe> &other) { count = other.count.load(); return *this; }
+        TCounter(TCounter<T, EThreadSafetyMode::eThreadSafe> &&other) : count(other.count.load()) { other.reset(); }
+        TCounter& operator=(TCounter<T, EThreadSafetyMode::eThreadSafe> &&other) { count = other.count.load(); other.reset(); return *this; }
 
         /**
          * @brief 自增

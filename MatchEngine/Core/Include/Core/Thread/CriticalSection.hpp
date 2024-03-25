@@ -9,9 +9,9 @@ namespace MatchEngine::Core {
     /**
      * @brief 临界区
      *
-     * @tparam ThreadSafetyMode 线程安全模式
+     * @tparam EThreadSafetyMode 线程安全模式
      */
-    template <ThreadSafetyMode>
+    template <EThreadSafetyMode>
     class CriticalSection;
 
     /**
@@ -19,7 +19,7 @@ namespace MatchEngine::Core {
      *
      */
     template <>
-    class CriticalSection<ThreadSafetyMode::eThreadSafe> {
+    class CriticalSection<EThreadSafetyMode::eThreadSafe> {
     public:
         CriticalSection() : mutex() {}
 
@@ -36,7 +36,7 @@ namespace MatchEngine::Core {
      * @tparam
      */
     template <>
-    class CriticalSection<ThreadSafetyMode::eNotThreadSafe> {
+    class CriticalSection<EThreadSafetyMode::eNotThreadSafe> {
     public:
         ScopeLock<void> getScopeLock() {
             return {};

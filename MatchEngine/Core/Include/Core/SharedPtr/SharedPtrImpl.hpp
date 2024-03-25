@@ -5,22 +5,18 @@
 #include "Core/Thread/Counter.hpp"
 
 namespace MatchEngine::Core {
-    // template <typename T, ThreadSafetyMode mode>
-    // class SharedPtr;
-
     /**
      * @brief 智能指针
      *
      * @tparam T 指针类型
-     *
-     * TODO: 不依赖std::shared_ptr实现
+     * @tparam mode 线程安全模式
      */
-    template <typename T, ThreadSafetyMode mode>
+    template <typename T, EThreadSafetyMode mode>
     class TSharedPtr {
-        template <typename, ThreadSafetyMode>
+        template <typename, EThreadSafetyMode>
         friend class TSharedPtr;
 
-        template <typename, ThreadSafetyMode>
+        template <typename, EThreadSafetyMode>
         friend class TSharedFromThis;
     private:
         TSharedPtr(T *object, TCounter<size_t, mode> *reference_count) : object(object), reference_count(reference_count) {
@@ -37,12 +33,12 @@ namespace MatchEngine::Core {
             }
         }
 
-        template <ThreadSafetyMode OtherMode>
+        template <EThreadSafetyMode OtherMode>
         TSharedPtr(const TSharedPtr<T, OtherMode> &other) : object(other.object), reference_count(other.reference_count) {
             increaseRef();
         }
 
-        template <ThreadSafetyMode OtherMode>
+        template <EThreadSafetyMode OtherMode>
         TSharedPtr &operator=(const TSharedPtr<T, OtherMode> &other) {
             object = other.object;
             reference_count = other.reference_count;
@@ -50,13 +46,13 @@ namespace MatchEngine::Core {
             return *this;
         }
 
-        template <ThreadSafetyMode OtherMode>
+        template <EThreadSafetyMode OtherMode>
         TSharedPtr(TSharedPtr<T, OtherMode> &&other) : object(other.object), reference_count(other.reference_count) {
             other.object = 0;
             other.reference_count = nullptr;
         }
 
-        template <ThreadSafetyMode OtherMode>
+        template <EThreadSafetyMode OtherMode>
         TSharedPtr &operator=(TSharedPtr<T, OtherMode> &&other) {
             object = other.object;
             reference_count = other.reference_count;
@@ -90,12 +86,12 @@ namespace MatchEngine::Core {
         TCounter<size_t, mode> *reference_count;
     };
 
-    template <typename T, ThreadSafetyMode mode = ThreadSafetyMode::eThreadSafe>
+    template <typename T, EThreadSafetyMode mode = EThreadSafetyMode::eThreadSafe>
     TSharedPtr<T, mode> MakeSharedPtr(T *ptr) {
         return TSharedPtr<T, mode>(ptr);
     }
 
-    template <typename T, typename ...Args, ThreadSafetyMode mode = ThreadSafetyMode::eThreadSafe>
+    template <typename T, typename ...Args, EThreadSafetyMode mode = EThreadSafetyMode::eThreadSafe>
     TSharedPtr<T, mode> MakeSharedPtr(Args &&...args) {
         return MakeSharedPtr(new T(Forward<Args>(args)...));
     }

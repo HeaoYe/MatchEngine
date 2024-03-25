@@ -4,10 +4,10 @@ namespace MatchEngine::Core {
     /**
      * @brief 线程安全模式, 用于区分一个类的两种版本
      *
-     * 用法: template <..., ThreadSafetyMode mode>
+     * 用法: template <..., EThreadSafetyMode mode>
      *
      */
-    enum class ThreadSafetyMode {
+    enum class EThreadSafetyMode {
         eThreadSafe,
         eNotThreadSafe,
     };
@@ -19,7 +19,7 @@ namespace MatchEngine::Core {
      *
      */
     struct ThreadSafetyModeThreadSafeStruct {
-        static constexpr ThreadSafetyMode SafetyMode = ThreadSafetyMode::eThreadSafe;
+        static constexpr EThreadSafetyMode SafetyMode = EThreadSafetyMode::eThreadSafe;
     };
 
     /**
@@ -29,6 +29,6 @@ namespace MatchEngine::Core {
      *
      */
     struct ThreadSafetyModeNotThreadSafeStruct {
-        static constexpr ThreadSafetyMode SafetyMode = ThreadSafetyMode::eNotThreadSafe;
+        static constexpr EThreadSafetyMode SafetyMode = EThreadSafetyMode::eNotThreadSafe;
     };
 }

@@ -72,8 +72,8 @@ int main() {
     delegate->removeDelegateFunction(f);
     delegate->broadcast(1, 4, 2);
 
-    MatchEngine::Core::THandleAllocator<char, MatchEngine::Core::ThreadSafetyMode::eThreadSafe> haTS;
-    MatchEngine::Core::THandleAllocator<char, MatchEngine::Core::ThreadSafetyMode::eNotThreadSafe> haNTS;
+    MatchEngine::Core::THandleAllocator<char, MatchEngine::Core::EThreadSafetyMode::eThreadSafe> haTS;
+    MatchEngine::Core::THandleAllocator<char, MatchEngine::Core::EThreadSafetyMode::eNotThreadSafe> haNTS;
     haNTS = Move(haTS);
     for (auto i : std::ranges::views::iota(0, 512)) {
         printf("%c ", haNTS.allocate());

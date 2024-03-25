@@ -10,7 +10,7 @@ namespace MatchEngine::Core {
      *
      * @tparam mode 线程安全模式
      */
-    template <ThreadSafetyMode mode = ThreadSafetyMode::eThreadSafe>
+    template <EThreadSafetyMode mode = EThreadSafetyMode::eThreadSafe>
     using TU32HandleAllocator = THandleAllocator<uint32_t, mode>;
 
     /**
@@ -18,7 +18,7 @@ namespace MatchEngine::Core {
      *
      * @tparam mode 线程安全模式
      */
-    template <ThreadSafetyMode mode = ThreadSafetyMode::eThreadSafe>
+    template <EThreadSafetyMode mode = EThreadSafetyMode::eThreadSafe>
     using TU64HandleAllocator = THandleAllocator<uint64_t, mode>;
 
     /**
@@ -26,6 +26,6 @@ namespace MatchEngine::Core {
      *
      * @tparam mode 线程安全模式
      */
-    template <ThreadSafetyMode mode = ThreadSafetyMode::eThreadSafe>
+    template <EThreadSafetyMode mode = EThreadSafetyMode::eThreadSafe>
     using TUIntHandleAllocator = THandleAllocator<size_t, mode>;
 }

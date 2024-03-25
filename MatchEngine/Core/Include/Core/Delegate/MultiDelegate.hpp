@@ -136,7 +136,7 @@ namespace MatchEngine::Core {
     private:
         TMap<DelegateHandleType, FunctionType> functions;
         // 因为allocate操作是在critical_section中执行, 所以不需要线程安全的句柄分配器
-        THandleAllocator<DelegateHandleType, ThreadSafetyMode::eNotThreadSafe> handle_allocator;
+        THandleAllocator<DelegateHandleType, EThreadSafetyMode::eNotThreadSafe> handle_allocator;
         CriticalSection<ThreadSafetyModeThreadSafeStruct::SafetyMode> critical_section;
     };
 }
